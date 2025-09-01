@@ -35,6 +35,7 @@ export interface Question {
   type: QuestionType;
   required: boolean;
   description?: string;
+  instructions?: string;
   placeholder?: string;
   options?: string[];
   validation?: QuestionValidation;
@@ -74,6 +75,7 @@ export interface StudyStatistics {
 export interface CreateResearchSchemaDto {
   title: string;
   description?: string;
+  protocol_id?: string;
   questions: Question[];
 }
 

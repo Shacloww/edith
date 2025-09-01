@@ -1,24 +1,28 @@
 import { CreateResearchSchemaDto } from '../types';
+import { ResearchProtocols } from './research-protocols';
 
 // Predefiniowane schematy badawcze zgodne z normami ISO i ASTM
 export const predefinedSchemas: CreateResearchSchemaDto[] = [
   {
     title: "ISO 1133 - Ocena wskaźnika szybkości płynięcia (MFR/MVR)",
     description: "Badanie wskaźnika szybkości płynięcia dla analizy parametrów przetwórczych tworzywa i jego zachowania podczas wytłaczania",
+    protocol_id: "iso-1133-mfr",
     questions: [
       {
         id: "1",
         title: "Materiał testowy",
         type: "TEXT",
         required: true,
-        description: "Podaj nazwę i typ materiału poddawanego badaniu"
+        description: "Podaj nazwę i typ materiału poddawanego badaniu",
+        instructions: "KROK 1: PRZYGOTOWANIE MATERIAŁU\n\n1. Sprawdź etykietę materiału i odnotuj:\n   - Nazwę handlową\n   - Typ polimeru (PE, PP, PS, itp.)\n   - Gatunek\n   - Numer partii\n\n2. Upewnij się, że materiał jest:\n   - Suchy (wilgotność < 0,1%)\n   - Wolny od zanieczyszczeń\n   - W temperaturze pokojowej\n\n3. Przygotuj około 5-8g materiału\n\n4. Zanotuj dokładną nazwę materiału w polu poniżej"
       },
       {
         id: "2", 
         title: "Temperatura badania",
         type: "NUMBER",
         required: true,
-        description: "Temperatura w °C (standardowe: 190°C, 200°C, 230°C w zależności od materiału)"
+        description: "Temperatura w °C (standardowe: 190°C, 200°C, 230°C w zależności od materiału)",
+        instructions: "KROK 2: USTAWIENIE TEMPERATURY\n\n1. Włącz plastometr i ustaw temperaturę:\n   - PE: 190°C ± 2°C\n   - PP: 230°C ± 2°C\n   - PS: 200°C ± 2°C\n   - ABS: 220°C ± 2°C\n\n2. Poczekaj minimum 30 minut na stabilizację temperatury\n\n3. Sprawdź wskaźnik temperatury - powinna być stabilna ±0.5°C\n\n4. Zanotuj dokładną temperaturę ustawioną w °C"
       },
       {
         id: "3",
@@ -31,28 +35,32 @@ export const predefinedSchemas: CreateResearchSchemaDto[] = [
 "10 kg (standardowe dla PP)",
 "21,6 kg (standardowe dla PS)"
         ],
-        description: "Masa obciążnika w kg"
+        description: "Masa obciążnika w kg",
+        instructions: "KROK 3: DOBÓR OBCIĄŻENIA\n\n1. Sprawdź w dokumentacji materiału zalecane obciążenie\n\n2. Standardowe obciążenia według ISO 1133:\n   - PE (polietylen): 2,16 kg\n   - PP (polipropylen): 10 kg\n   - PS (polistyren): 21,6 kg\n   - PMMA: 3,8 kg\n\n3. Przygotuj odpowiedni ciężarek\n\n4. Sprawdź czy ciężarek jest czysty i nieuszkodzony\n\n5. Wybierz odpowiednie obciążenie z listy"
       },
       {
         id: "4",
         title: "Czas przygotowania próbki",
         type: "NUMBER",
         required: true,
-        description: "Czas kondycjonowania w minutach (standardowo 4 min)"
+        description: "Czas kondycjonowania w minutach (standardowo 4 min)",
+        instructions: "KROK 4: KONDYCJONOWANIE MATERIAŁU\n\n1. Wsyp około 5-8g materiału do cylindra plastometru\n\n2. Włóż tłok (bez obciążenia) do cylindra\n\n3. Uruchom stoper - czas kondycjonowania: 4 minuty ± 15 sekund\n\n4. Podczas kondycjonowania:\n   - Materiał musi się całkowicie stopić\n   - Nie dociskaj tłoka\n   - Sprawdzaj temperaturę co minutę\n\n5. Po zakończeniu kondycjonowania zanotuj czas w minutach"
       },
       {
         id: "5",
         title: "Czas odcięcia",
         type: "NUMBER", 
         required: true,
-        description: "Czas zbierania próbki w sekundach (standardowo 10 s)"
+        description: "Czas zbierania próbki w sekundach (standardowo 10 s)",
+        instructions: "KROK 5: POMIAR MFR\n\n1. Po zakończeniu kondycjonowania:\n   - Nałóż obciążenie na tłok\n   - Przygotuj nożyk do odcinania\n   - Przygotuj wagę analityczną (dokładność 0,1 mg)\n\n2. Procedura pomiaru:\n   - Odczekaj 10-20 sekund na stabilizację\n   - Uruchom stoper na 10 sekund\n   - Odetnij próbkę dokładnie po 10 sekundach\n   - Zbierz odciętą próbkę\n\n3. Zważ próbkę i zanotuj masę\n\n4. Powtórz pomiar minimum 3 razy\n\n5. Zanotuj czas odcięcia w sekundach"
       },
       {
         id: "6",
         title: "Wynik MFR",
         type: "NUMBER",
         required: true,
-        description: "Wskaźnik szybkości płynięcia w g/10min"
+        description: "Wskaźnik szybkości płynięcia w g/10min",
+        instructions: "KROK 6: OBLICZENIE MFR\n\n1. Zważ wszystkie próbki odcięte podczas pomiaru\n\n2. Oblicz średnią masę próbki z minimum 3 pomiarów\n\n3. Wzór na MFR:\n   MFR = (masa próbki [g] × 600) / czas odcięcia [s]\n\n4. Przykład:\n   - Masa próbki: 0,1523 g\n   - Czas: 10 s\n   - MFR = (0,1523 × 600) / 10 = 9,14 g/10min\n\n5. Zapisz wynik z dokładnością do 0,1 g/10min\n\n6. Sprawdź czy wynik mieści się w oczekiwanym zakresie dla danego materiału"
       },
       {
         id: "7",
@@ -62,27 +70,31 @@ export const predefinedSchemas: CreateResearchSchemaDto[] = [
         options: [
 "ISO 1133-1 (metoda A - MFR)",
 "ISO 1133-2 (metoda B - MVR)"
-        ]
+        ],
+        instructions: "KROK 7: WYBÓR METODY\n\n1. Metoda A (MFR - Melt Flow Rate):\n   - Pomiar masy próbki wytłoczonej\n   - Wynik w g/10min\n   - Standardowa metoda dla większości materiałów\n\n2. Metoda B (MVR - Melt Volume Rate):\n   - Pomiar objętości próbki wytłoczonej\n   - Wynik w cm³/10min\n   - Zalecana dla materiałów z napełniaczami\n\n3. Dla tego badania wybierz metodę A (MFR)\n\n4. Zanotuj zastosowaną normę"
       },
       {
         id: "8",
         title: "Uwagi dodatkowe",
         type: "TEXT",
         required: false,
-        description: "Obserwacje dotyczące płynięcia, jednolitości itp."
+        description: "Obserwacje dotyczące płynięcia, jednolitości itp.",
+        instructions: "KROK 8: OBSERWACJE I UWAGI\n\n1. Zanotuj wszystkie obserwacje podczas badania:\n   - Jakość płynięcia (równomierne/nierównomierne)\n   - Kolor wytłoczki\n   - Obecność pęcherzyków powietrza\n   - Jednorodność materiału\n\n2. Ewentualne problemy:\n   - Zatykanie dyszy\n   - Zmiana koloru materiału\n   - Nieregularne wytłaczanie\n\n3. Warunki środowiskowe:\n   - Temperatura i wilgotność powietrza\n   - Data i czas badania\n\n4. Dodatkowe uwagi dotyczące procedury lub wyników"
       }
     ]
   },
   {
     title: "ISO 289 - Pomiar lepkości Mooneya",
     description: "Badanie lepkości Mooneya dla oceny elastyczności i przetwarzalności elastomerów w stanie niezwulkanizowanym",
+    protocol_id: "iso-289-mooney",
     questions: [
       {
         id: "1",
         title: "Typ elastomeru",
         type: "TEXT",
         required: true,
-        description: "Rodzaj gumy/elastomeru (np. NR, SBR, EPDM)"
+        description: "Rodzaj gumy/elastomeru (np. NR, SBR, EPDM)",
+        instructions: "KROK 1: IDENTYFIKACJA MATERIAŁU\n\n1. Sprawdź dokumentację materiału i odnotuj:\n   - Typ elastomeru (NR, SBR, NBR, EPDM, itp.)\n   - Nazwę handlową\n   - Skład mieszanki (jeśli znany)\n   - Numer partii\n\n2. Standardowe elastomery:\n   - NR (Natural Rubber) - kauczuk naturalny\n   - SBR (Styrene Butadiene Rubber)\n   - NBR (Nitrile Butadiene Rubber)\n   - EPDM (Ethylene Propylene Diene)\n\n3. Sprawdź czy materiał jest w odpowiednim stanie:\n   - Bez śladów wulkanizacji\n   - Temperatura pokojowa\n   - Brak zanieczyszczeń"
       },
       {
         id: "2",
@@ -94,7 +106,8 @@ export const predefinedSchemas: CreateResearchSchemaDto[] = [
 "120°C",
 "125°C"
         ],
-        description: "Temperatura pomiaru w °C"
+        description: "Temperatura pomiaru w °C",
+        instructions: "KROK 2: USTAWIENIE TEMPERATURY\n\n1. Standardowe temperatury według ISO 289:\n   - 100°C ± 0,5°C (standardowa dla większości elastomerów)\n   - 120°C (dla specjalnych materiałów)\n   - 125°C (dla niektórych mieszanek)\n\n2. Procedura nagrzewania:\n   - Włącz wiskometr Mooneya\n   - Ustaw temperaturę na 100°C\n   - Poczekaj minimum 30 minut na stabilizację\n   - Sprawdź wskaźnik temperatury\n\n3. Sprawdź kalibrację termometru\n\n4. Wybierz odpowiednią temperaturę z listy"
       },
       {
         id: "3",
@@ -104,7 +117,8 @@ export const predefinedSchemas: CreateResearchSchemaDto[] = [
         options: [
 "Duży rotor (ML)",
 "Mały rotor (MS)"
-        ]
+        ],
+        instructions: "KROK 3: WYBÓR ROTORA\n\n1. Duży rotor (ML - Mooney Large):\n   - Średnica: 38,1 mm\n   - Standardowy dla większości elastomerów\n   - Zakres lepkości: 30-100 jednostek Mooneya\n\n2. Mały rotor (MS - Mooney Small):\n   - Średnica: 30,48 mm\n   - Dla materiałów o wysokiej lepkości\n   - Zakres lepkości: 10-40 jednostek Mooneya\n\n3. Sprawdź stan rotora:\n   - Czyste powierzchnie\n   - Brak uszkodzeń\n   - Właściwe wymiary\n\n4. Zamontuj wybrany rotor w wiskometrze\n\n5. Dla standardowych elastomerów wybierz duży rotor (ML)"
       },
       {
         id: "4",

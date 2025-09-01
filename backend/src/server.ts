@@ -10,6 +10,7 @@ import researchSchemasRoutes from './routes/researchSchemas';
 import studiesRoutes from './routes/studies';
 import responsesRoutes from './routes/responses';
 import predefinedSchemasRoutes from './routes/predefinedSchemas';
+import protocolsRoutes from './routes/protocols';
 
 // Load environment variables
 dotenv.config();
@@ -47,6 +48,7 @@ app.use('/api/research-schemas', researchSchemasRoutes);
 app.use('/api/studies', studiesRoutes);
 app.use('/api/responses', responsesRoutes);
 app.use('/api/predefined-schemas', predefinedSchemasRoutes);
+app.use('/api/protocols', protocolsRoutes);
 
 // Error handling middleware
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
