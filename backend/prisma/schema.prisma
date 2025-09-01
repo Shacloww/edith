@@ -1,0 +1,55 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model ResearchSchema {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  questions   String   // Struktura pytań w formacie JSON string
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relacje z badaniami
+  studies Study[]
+  
+  @@map("research_schemas")
+}
+
+model Study {
+  id               String         @id @default(cuid())
+  title            String
+  description      String?
+  researchSchemaId String
+  status           String         @default("DRAFT") // DRAFT, ACTIVE, COMPLETED, PAUSED
+  startDate        DateTime?
+  endDate          DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  
+  // Relacje
+  researchSchema   ResearchSchema @relation(fields: [researchSchemaId], references: [id], onDelete: Cascade)
+  responses        Response[]
+  
+  @@map("studies")
+}
+
+model Response {
+  id        String   @id @default(cuid())
+  studyId   String
+  answers   String   // Odpowiedzi w formacie JSON string
+  createdAt DateTime @default(now())
+  
+  // Relacje
+  study     Study    @relation(fields: [studyId], references: [id], onDelete: Cascade)
+  
+  @@map("responses")
+}
