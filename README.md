@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Edith Logo](./frontend/public/logo.png)
+![Edith Logo](./frontend/public/ico.png)
 
 **Professional research survey platform with advanced statistical analysis**
 
