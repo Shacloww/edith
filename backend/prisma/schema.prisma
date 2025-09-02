@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,101 +7,67 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// =============================================
-// SYSTEM UŻYTKOWNIKÓW I AUTORYZACJI
-// =============================================
-
 model User {
-  id              String            @id @default(cuid())
-  email           String            @unique
-  username        String?           @unique
-  
-  // Hasło i bezpieczeństwo
-  passwordHash    String
-  salt            String?
-  
-  // Informacje osobiste
-  firstName       String?
-  lastName        String?
-  title           String?           // Dr, Prof, Inż, etc.
-  affiliation     String?           // organizacja, uczelnia
-  department      String?
-  position        String?
-  
-  // Kontakt
-  phone           String?
-  address         Json?             // adres jako JSON
-  
-  // Zdjęcie profilowe
-  avatar          String?           // URL do zdjęcia
-  
-  // Status konta
-  isActive        Boolean           @default(true)
-  isVerified      Boolean           @default(false)
-  role            UserRole          @default(USER)
-  
-  // Ustawienia konta
-  language        String            @default("pl")
-  timezone        String            @default("Europe/Warsaw")
-  preferences     Json?             // preferencje użytkownika
-  
-  // Logowanie i sesje
-  lastLoginAt     DateTime?
-  loginAttempts   Int               @default(0)
-  lockedUntil     DateTime?
-  
-  // Weryfikacja email
+  id                     String                @id @default(cuid())
+  email                  String                @unique
+  username               String?               @unique
+  passwordHash           String
+  salt                   String?
+  firstName              String?
+  lastName               String?
+  title                  String?
+  affiliation            String?
+  department             String?
+  position               String?
+  phone                  String?
+  address                Json?
+  avatar                 String?
+  isActive               Boolean               @default(true)
+  isVerified             Boolean               @default(false)
+  role                   UserRole              @default(USER)
+  language               String                @default("pl")
+  timezone               String                @default("Europe/Warsaw")
+  preferences            Json?
+  lastLoginAt            DateTime?
+  loginAttempts          Int                   @default(0)
+  lockedUntil            DateTime?
   emailVerificationToken String?
   emailVerifiedAt        DateTime?
-  
-  // Resetowanie hasła
   passwordResetToken     String?
   passwordResetExpiresAt DateTime?
-  
-  // Metadane
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  createdBy       String?           // kto utworzył konto (admin)
-  
-  // Relacje
-  permissions     UserPermission[]
-  groupMemberships UserGroupMembership[]
-  sessions        UserSession[]
-  protocols       Protocol[]        // utworzone protokoły
-  studies         Study[]           // utworzone badania
-  studySessions   StudySession[]    // prowadzone sesje
-  auditLogs       AuditLog[]
-  notifications   Notification[]
-  createdGroups   UserGroup[]       @relation("GroupCreator")
-  
+  createdAt              DateTime              @default(now())
+  updatedAt              DateTime              @updatedAt
+  createdBy              String?
+  auditLogs              AuditLog[]
+  notifications          Notification[]
+  protocols              Protocol[]
+  studies                Study[]
+  studySessions          StudySession[]
+  groupMemberships       UserGroupMembership[]
+  createdGroups          UserGroup[]           @relation("GroupCreator")
+  permissions            UserPermission[]
+  sessions               UserSession[]
+
   @@map("users")
 }
 
 model UserSession {
-  id          String    @id @default(cuid())
-  userId      String
-  token       String    @unique
-  refreshToken String?  @unique
-  
-  // Informacje o sesji
-  ipAddress   String?
-  userAgent   String?
-  device      String?
-  location    String?
-  
-  // Czas trwania
-  expiresAt   DateTime
-  createdAt   DateTime  @default(now())
-  lastUsedAt  DateTime  @default(now())
-  
-  // Status
-  isActive    Boolean   @default(true)
-  revokedAt   DateTime?
-  revokedBy   String?
-  
-  // Relacje
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id           String    @id @default(cuid())
+  userId       String
+  token        String    @unique
+  refreshToken String?   @unique
+  ipAddress    String?
+  userAgent    String?
+  device       String?
+  location     String?
+  expiresAt    DateTime
+  createdAt    DateTime  @default(now())
+  lastUsedAt   DateTime  @default(now())
+  isActive     Boolean   @default(true)
+  revokedAt    DateTime?
+  revokedBy    String?
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@map("user_sessions")
 }
 
@@ -112,20 +75,14 @@ model UserGroup {
   id          String                @id @default(cuid())
   name        String                @unique
   description String?
-  
-  // Uprawnienia grupy
-  permissions Json?                 // lista uprawnień
-  
-  // Metadane
+  permissions Json?
   isActive    Boolean               @default(true)
   createdAt   DateTime              @default(now())
   updatedAt   DateTime              @updatedAt
   createdBy   String
-  
-  // Relacje
-  creator     User                  @relation("GroupCreator", fields: [createdBy], references: [id])
   members     UserGroupMembership[]
-  
+  creator     User                  @relation("GroupCreator", fields: [createdBy], references: [id])
+
   @@map("user_groups")
 }
 
@@ -133,225 +90,171 @@ model UserGroupMembership {
   id       String    @id @default(cuid())
   userId   String
   groupId  String
-  
-  // Status członkostwa
   isActive Boolean   @default(true)
   joinedAt DateTime  @default(now())
   leftAt   DateTime?
-  
-  // Dodatkowe uprawnienia w grupie
   role     GroupRole @default(MEMBER)
-  
-  // Relacje
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   group    UserGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([userId, groupId])
   @@map("user_group_memberships")
 }
 
 model UserPermission {
-  id         String           @id @default(cuid())
+  id         String         @id @default(cuid())
   userId     String
   permission PermissionType
-  resource   String?          // opcjonalne ograniczenie do zasobu
-  resourceId String?          // ID konkretnego zasobu
-  
-  // Metadane
-  grantedAt  DateTime         @default(now())
+  resource   String?
+  resourceId String?
+  grantedAt  DateTime       @default(now())
   grantedBy  String
   expiresAt  DateTime?
-  
-  // Relacje
-  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([userId, permission, resource, resourceId])
   @@map("user_permissions")
 }
 
 model AuditLog {
-  id         String    @id @default(cuid())
+  id         String   @id @default(cuid())
   userId     String?
-  action     String    // CREATE, UPDATE, DELETE, LOGIN, etc.
-  resource   String    // table name or resource type
-  resourceId String?   // ID of affected resource
-  
-  // Szczegóły akcji
-  oldData    Json?     // dane przed zmianą
-  newData    Json?     // dane po zmianie
-  metadata   Json?     // dodatkowe metadane
-  
-  // Kontekst
+  action     String
+  resource   String
+  resourceId String?
+  oldData    Json?
+  newData    Json?
+  metadata   Json?
   ipAddress  String?
   userAgent  String?
   sessionId  String?
-  
-  // Czas
-  createdAt  DateTime  @default(now())
-  
-  // Relacje
-  user       User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
-  
+  createdAt  DateTime @default(now())
+  user       User?    @relation(fields: [userId], references: [id])
+
   @@map("audit_logs")
 }
 
 model Notification {
-  id          String            @id @default(cuid())
-  userId      String
-  title       String
-  message     String
-  type        NotificationType  @default(INFO)
-  
-  // Status
-  isRead      Boolean           @default(false)
-  readAt      DateTime?
-  
-  // Metadane
-  data        Json?             // dodatkowe dane notyfikacji
-  createdAt   DateTime          @default(now())
-  expiresAt   DateTime?
-  
-  // Relacje
-  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id        String           @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      NotificationType @default(INFO)
+  isRead    Boolean          @default(false)
+  readAt    DateTime?
+  data      Json?
+  createdAt DateTime         @default(now())
+  expiresAt DateTime?
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@map("notifications")
 }
 
-// =============================================
-// PROTOKOŁY BADAWCZE
-// =============================================
-
 model Protocol {
-  id               String             @id @default(cuid())
-  title            String
-  description      String?
-  category         String
-  type             ProtocolType       @default(USER) // PREDEFINED, USER
-  version          String?            @default("1.0")
-  
-  // Podstawowe informacje
-  difficulty       String?            // easy, intermediate, advanced
+  id                String                  @id @default(cuid())
+  title             String
+  description       String?
+  category          String
+  type              ProtocolType            @default(USER)
+  version           String?                 @default("1.0")
+  difficulty        String?
   estimatedDuration String?
-  
-  // Szczegółowe informacje
-  overview         Json?              // purpose, scope, principles, standards
-  equipment        Json?              // lista wymaganego sprzętu
-  materials        Json?              // lista materiałów
-  safetyGuidelines Json?              // wytyczne bezpieczeństwa
-  references       Json?              // literatura, normy
-  notes            Json?              // dodatkowe notatki
-  
-  // Metadane
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  createdBy        String?
-  isPublic         Boolean            @default(false)
-  isActive         Boolean            @default(true)
-  
-  // Relacje
-  creator          User?              @relation(fields: [createdBy], references: [id], onDelete: SetNull)
-  steps            ProtocolStep[]
-  testConditions   ProtocolTestCondition[]
-  calculations     ProtocolCalculation[]
-  typicalValues    ProtocolTypicalValue[]
-  commonIssues     ProtocolCommonIssue[]
-  studies          Study[]
-  
+  overview          Json?
+  equipment         Json?
+  materials         Json?
+  safetyGuidelines  Json?
+  references        Json?
+  notes             Json?
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+  createdBy         String?
+  isPublic          Boolean                 @default(false)
+  isActive          Boolean                 @default(true)
+  calculations      ProtocolCalculation[]
+  commonIssues      ProtocolCommonIssue[]
+  steps             ProtocolStep[]
+  testConditions    ProtocolTestCondition[]
+  typicalValues     ProtocolTypicalValue[]
+  creator           User?                   @relation(fields: [createdBy], references: [id])
+  studies           Study[]
+
   @@map("protocols")
 }
 
 model ProtocolStep {
-  id           String           @id @default(cuid())
+  id           String              @id @default(cuid())
   protocolId   String
   stepNumber   Int
   title        String
   description  String?
   duration     String?
-  
-  // Instrukcje wykonania
-  instructions Json?            // lista kroków
-  tips         Json?            // wskazówki
-  safety       Json?            // zasady bezpieczeństwa
-  
-  // Metadane
-  isRequired   Boolean          @default(true)
-  createdAt    DateTime         @default(now())
-  
-  // Relacje
-  protocol     Protocol         @relation(fields: [protocolId], references: [id], onDelete: Cascade)
+  instructions Json?
+  tips         Json?
+  safety       Json?
+  isRequired   Boolean             @default(true)
+  createdAt    DateTime            @default(now())
   dataPoints   ProtocolDataPoint[]
-  
+  protocol     Protocol            @relation(fields: [protocolId], references: [id], onDelete: Cascade)
+
   @@map("protocol_steps")
 }
 
 model ProtocolDataPoint {
-  id             String           @id @default(cuid())
-  stepId         String
-  name           String
-  description    String?
-  parameterType  DataPointType    @default(MEASUREMENT)
-  dataType       DataType         @default(NUMBER)
-  unit           String?
-  
-  // Walidacja
-  isRequired     Boolean          @default(true)
-  minValue       Float?
-  maxValue       Float?
-  pattern        String?
-  options        Json?            // dla typu SELECTION
-  
-  // Obliczenia
-  isCalculated   Boolean          @default(false)
-  formula        String?
-  variables      Json?
-  
-  // Metadane
-  orderIndex     Int              @default(0)
-  
-  // Relacje
-  step           ProtocolStep     @relation(fields: [stepId], references: [id], onDelete: Cascade)
-  
+  id            String        @id @default(cuid())
+  stepId        String
+  name          String
+  description   String?
+  parameterType DataPointType @default(MEASUREMENT)
+  dataType      DataType      @default(NUMBER)
+  unit          String?
+  isRequired    Boolean       @default(true)
+  minValue      Float?
+  maxValue      Float?
+  pattern       String?
+  options       Json?
+  isCalculated  Boolean       @default(false)
+  formula       String?
+  variables     Json?
+  orderIndex    Int           @default(0)
+  step          ProtocolStep  @relation(fields: [stepId], references: [id], onDelete: Cascade)
+
   @@map("protocol_data_points")
 }
 
 model ProtocolTestCondition {
-  id          String           @id @default(cuid())
+  id          String            @id @default(cuid())
   protocolId  String
   name        String
   value       String
   unit        String?
   tolerance   String?
   category    ConditionCategory @default(ENVIRONMENTAL)
-  required    Boolean          @default(true)
+  required    Boolean           @default(true)
   description String?
-  
-  // Relacje
-  protocol    Protocol         @relation(fields: [protocolId], references: [id], onDelete: Cascade)
-  
+  protocol    Protocol          @relation(fields: [protocolId], references: [id], onDelete: Cascade)
+
   @@map("protocol_test_conditions")
 }
 
 model ProtocolCalculation {
-  id          String           @id @default(cuid())
+  id          String              @id @default(cuid())
   protocolId  String
   name        String
   description String?
   formula     String
-  variables   Json             // definicje zmiennych
+  variables   Json
   unit        String?
   category    CalculationCategory @default(MECHANICAL)
-  isRequired  Boolean          @default(false)
+  isRequired  Boolean             @default(false)
   example     String?
   notes       String?
-  
-  // Relacje
-  protocol    Protocol         @relation(fields: [protocolId], references: [id], onDelete: Cascade)
-  
+  protocol    Protocol            @relation(fields: [protocolId], references: [id], onDelete: Cascade)
+
   @@map("protocol_calculations")
 }
 
 model ProtocolTypicalValue {
-  id          String           @id @default(cuid())
+  id          String        @id @default(cuid())
   protocolId  String
   parameter   String
   material    String
@@ -360,222 +263,162 @@ model ProtocolTypicalValue {
   minRange    String?
   maxRange    String?
   conditions  String?
-  category    ValueCategory    @default(MECHANICAL)
+  category    ValueCategory @default(MECHANICAL)
   source      String?
-  isReference Boolean          @default(false)
+  isReference Boolean       @default(false)
   notes       String?
-  
-  // Relacje
-  protocol    Protocol         @relation(fields: [protocolId], references: [id], onDelete: Cascade)
-  
+  protocol    Protocol      @relation(fields: [protocolId], references: [id], onDelete: Cascade)
+
   @@map("protocol_typical_values")
 }
 
 model ProtocolCommonIssue {
-  id          String           @id @default(cuid())
-  protocolId  String
-  issue       String
-  cause       String
-  solution    String
-  severity    IssueSeverity    @default(MEDIUM)
-  frequency   String?
-  
-  // Relacje
-  protocol    Protocol         @relation(fields: [protocolId], references: [id], onDelete: Cascade)
-  
+  id         String        @id @default(cuid())
+  protocolId String
+  issue      String
+  cause      String
+  solution   String
+  severity   IssueSeverity @default(MEDIUM)
+  frequency  String?
+  protocol   Protocol      @relation(fields: [protocolId], references: [id], onDelete: Cascade)
+
   @@map("protocol_common_issues")
 }
 
-// =============================================
-// BADANIA (TEMPLATES/SZABLONY)
-// =============================================
-
 model Study {
-  id               String            @id @default(cuid())
-  name             String
-  description      String?
-  protocolId       String
-  protocolName     String            // cache dla wydajności
-  category         String?
-  
-  // Ustawienia badania
-  settings         Json              // StudySettings as JSON
-  parameters       Json?             // StudyParameter[] as JSON
-  
-  // Status i metadane
-  status           StudyStatus       @default(DRAFT)
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  createdBy        String
-  isTemplate       Boolean           @default(true)
-  
-  // Relacje
-  creator          User              @relation(fields: [createdBy], references: [id], onDelete: Cascade)
-  protocol         Protocol          @relation(fields: [protocolId], references: [id])
+  id                 String                    @id @default(cuid())
+  name               String
+  description        String?
+  protocolId         String?
+  protocolName       String
+  category           String?
+  settings           Json
+  parameters         Json?
+  status             StudyStatus               @default(DRAFT)
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
+  createdBy          String
+  isTemplate         Boolean                   @default(true)
+  creator            User                      @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  protocol           Protocol?                 @relation(fields: [protocolId], references: [id])
   dataCollectionPlan StudyDataCollectionStep[]
-  sessions         StudySession[]
-  
+  sessions           StudySession[]
+
   @@map("studies")
 }
 
 model StudyDataCollectionStep {
-  id               String            @id @default(cuid())
-  studyId          String
-  stepNumber       Int
-  protocolStepId   String
-  stepName         String
-  description      String?
-  estimatedDuration String?
-  isRequired       Boolean           @default(true)
-  executionNotes   String?
-  
-  // Relacje
-  study            Study             @relation(fields: [studyId], references: [id], onDelete: Cascade)
-  dataPoints       StudyDataPoint[]
+  id                 String                   @id @default(cuid())
+  studyId            String
+  stepNumber         Int
+  protocolStepId     String
+  stepName           String
+  description        String?
+  estimatedDuration  String?
+  isRequired         Boolean                  @default(true)
+  executionNotes     String?
+  study              Study                    @relation(fields: [studyId], references: [id], onDelete: Cascade)
+  dataPoints         StudyDataPoint[]
   requiredConditions StudyRequiredCondition[]
-  
+
   @@map("study_data_collection_steps")
 }
 
 model StudyDataPoint {
-  id                String            @id @default(cuid())
-  stepId            String
-  name              String
-  description       String?
-  parameterType     DataPointType     @default(MEASUREMENT)
-  dataType          DataType          @default(NUMBER)
-  unit              String?
-  options           Json?
-  
-  // Walidacja
-  isRequired        Boolean           @default(true)
-  minValue          Float?
-  maxValue          Float?
-  pattern           String?
-  
-  // Obliczenia
-  isCalculated      Boolean           @default(false)
+  id                 String                  @id @default(cuid())
+  stepId             String
+  name               String
+  description        String?
+  parameterType      DataPointType           @default(MEASUREMENT)
+  dataType           DataType                @default(NUMBER)
+  unit               String?
+  options            Json?
+  isRequired         Boolean                 @default(true)
+  minValue           Float?
+  maxValue           Float?
+  pattern            String?
+  isCalculated       Boolean                 @default(false)
   calculationFormula String?
-  
-  // Relacje
-  step              StudyDataCollectionStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
-  
+  step               StudyDataCollectionStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
+
   @@map("study_data_points")
 }
 
 model StudyRequiredCondition {
-  id          String            @id @default(cuid())
-  stepId      String
-  name        String
-  value       String
-  unit        String?
-  tolerance   String?
-  category    ConditionCategory @default(ENVIRONMENTAL)
-  required    Boolean           @default(true)
-  
-  // Relacje
-  step        StudyDataCollectionStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
-  
+  id        String                  @id @default(cuid())
+  stepId    String
+  name      String
+  value     String
+  unit      String?
+  tolerance String?
+  category  ConditionCategory       @default(ENVIRONMENTAL)
+  required  Boolean                 @default(true)
+  step      StudyDataCollectionStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
+
   @@map("study_required_conditions")
 }
 
-// =============================================
-// SESJE BADAŃ (KONKRETNE WYKONANIA)
-// =============================================
-
 model StudySession {
-  id               String            @id @default(cuid())
+  id               String                 @id @default(cuid())
   studyId          String
   sessionName      String
   description      String?
-  operatorId       String            // zmienione z operatorName na userId
-  
-  // Status wykonania
-  status           SessionStatus     @default(PLANNED)
+  operatorId       String
+  status           SessionStatus          @default(PLANNED)
   currentStepId    String?
-  
-  // Progress tracking
-  completedSteps   Int               @default(0)
+  completedSteps   Int                    @default(0)
   totalSteps       Int
-  completedSamples Int               @default(0)
+  completedSamples Int                    @default(0)
   totalSamples     Int
-  
-  // Czasy
   startedAt        DateTime?
   completedAt      DateTime?
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  
-  // Notatki i komentarze
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
   notes            String?
-  
-  // Relacje
-  operator         User              @relation(fields: [operatorId], references: [id])
-  study            Study             @relation(fields: [studyId], references: [id], onDelete: Cascade)
-  samples          StudySample[]
-  results          StudyResult[]
   testConditions   SessionTestCondition[]
   attachments      StudyAttachment[]
-  
+  results          StudyResult[]
+  samples          StudySample[]
+  operator         User                   @relation(fields: [operatorId], references: [id])
+  study            Study                  @relation(fields: [studyId], references: [id], onDelete: Cascade)
+
   @@map("study_sessions")
 }
 
 model StudySample {
-  id           String            @id @default(cuid())
+  id           String        @id @default(cuid())
   sessionId    String
   sampleNumber Int
   sampleName   String
   description  String?
-  
-  // Status próbki
-  status       SampleStatus      @default(PENDING)
-  
-  // Czasy
+  status       SampleStatus  @default(PENDING)
   startTime    DateTime?
   endTime      DateTime?
-  
-  // Dane próbki
-  properties   Json?             // właściwości materiału, wymiary etc.
-  
-  // Notatki
+  properties   Json?
   notes        String?
-  
-  // Relacje
-  session      StudySession      @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   results      StudyResult[]
-  
+  session      StudySession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
   @@map("study_samples")
 }
 
 model StudyResult {
-  id           String            @id @default(cuid())
-  sessionId    String
-  sampleId     String?
-  stepId       String            // z study data collection step
-  dataPointId  String            // z study data point
-  
-  // Wartość pomiaru
-  value        String            // przechowujemy jako string dla elastyczności
-  unit         String?
-  
-  // Metadane pomiaru
-  measuredAt   DateTime          @default(now())
-  measuredBy   String
-  
-  // Walidacja
-  isValid      Boolean           @default(true)
+  id              String       @id @default(cuid())
+  sessionId       String
+  sampleId        String?
+  stepId          String
+  dataPointId     String
+  value           String
+  unit            String?
+  measuredAt      DateTime     @default(now())
+  measuredBy      String
+  isValid         Boolean      @default(true)
   validationNotes String?
-  
-  // Czy wartość jest obliczona
-  isCalculated Boolean           @default(false)
-  
-  // Niepewność pomiaru
-  uncertainty  Float?
-  
-  // Relacje
-  session      StudySession      @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  sample       StudySample?      @relation(fields: [sampleId], references: [id], onDelete: SetNull)
-  
+  isCalculated    Boolean      @default(false)
+  uncertainty     Float?
+  sample          StudySample? @relation(fields: [sampleId], references: [id])
+  session         StudySession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
   @@map("study_results")
 }
 
@@ -587,75 +430,52 @@ model SessionTestCondition {
   unit        String?
   tolerance   String?
   category    ConditionCategory @default(ENVIRONMENTAL)
-  actualValue String?           // rzeczywista wartość podczas testu
-  
-  // Relacje
+  actualValue String?
   session     StudySession      @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  
+
   @@map("session_test_conditions")
 }
 
 model StudyAttachment {
-  id          String            @id @default(cuid())
-  sessionId   String
-  stepId      String?           // opcjonalnie powiązane z krokiem
-  
-  // Informacje o pliku
-  filename    String
+  id           String       @id @default(cuid())
+  sessionId    String
+  stepId       String?
+  filename     String
   originalName String
-  fileType    String
-  fileSize    Int
-  description String?
-  
-  // Ścieżka do pliku
-  filePath    String
-  url         String?
-  
-  // Metadane
-  uploadedAt  DateTime          @default(now())
-  uploadedBy  String
-  
-  // Relacje
-  session     StudySession      @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  
+  fileType     String
+  fileSize     Int
+  description  String?
+  filePath     String
+  url          String?
+  uploadedAt   DateTime     @default(now())
+  uploadedBy   String
+  session      StudySession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
   @@map("study_attachments")
 }
 
-// =============================================
-// LEGACY SUPPORT (stare schematy)
-// =============================================
-
 model ResearchSchema {
-  id          String   @id @default(cuid())
+  id          String     @id @default(cuid())
   title       String
   description String?
-  questions   String   // Struktura pytań w formacie JSON string
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  // Relacje z odpowiedziami
+  questions   String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
   responses   Response[]
-  
+
   @@map("research_schemas")
 }
 
 model Response {
-  id              String         @id @default(cuid())
+  id               String         @id @default(cuid())
   researchSchemaId String
-  answers         String         // Odpowiedzi w formacie JSON string
-  createdAt       DateTime       @default(now())
-  
-  // Relacje
-  researchSchema  ResearchSchema @relation(fields: [researchSchemaId], references: [id], onDelete: Cascade)
-  
+  answers          String
+  createdAt        DateTime       @default(now())
+  researchSchema   ResearchSchema @relation(fields: [researchSchemaId], references: [id], onDelete: Cascade)
+
   @@map("responses")
 }
 
-// =============================================
-// ENUMS
-// =============================================
-
-// User system enums
 enum UserRole {
   SUPER_ADMIN
   ADMIN
@@ -673,37 +493,26 @@ enum GroupRole {
 }
 
 enum PermissionType {
-  // System permissions
   SYSTEM_ADMIN
   USER_MANAGEMENT
-  
-  // Protocol permissions
   PROTOCOL_CREATE
   PROTOCOL_READ
   PROTOCOL_UPDATE
   PROTOCOL_DELETE
   PROTOCOL_PUBLISH
-  
-  // Study permissions
   STUDY_CREATE
   STUDY_READ
   STUDY_UPDATE
   STUDY_DELETE
   STUDY_EXECUTE
-  
-  // Session permissions
   SESSION_CREATE
   SESSION_READ
   SESSION_UPDATE
   SESSION_DELETE
   SESSION_EXECUTE
-  
-  // Data permissions
   DATA_READ
   DATA_EXPORT
   DATA_DELETE
-  
-  // Report permissions
   REPORT_CREATE
   REPORT_READ
   REPORT_EXPORT
@@ -717,7 +526,6 @@ enum NotificationType {
   SYSTEM
 }
 
-// Protocol system enums
 enum ProtocolType {
   PREDEFINED
   USER

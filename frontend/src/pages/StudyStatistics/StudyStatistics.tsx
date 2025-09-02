@@ -43,7 +43,8 @@ interface StudyData {
 }
 
 const StudyStatistics: React.FC<StudyStatisticsProps> = ({ studyId: propStudyId }) => {
-  const { studyId: paramStudyId } = useParams<{ studyId: string }>();
+  console.log('StudyStatistics component rendered');
+  const { id: paramStudyId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const studyId = propStudyId || paramStudyId;
 

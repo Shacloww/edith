@@ -37,7 +37,9 @@ api.interceptors.response.use(
 export const studiesApi = {
   // Pobierz wszystkie badania
   getAll: async (): Promise<ApiResponse<Study[]>> => {
+    console.log('studiesApi.getAll - Starting request...');
     const response = await api.get<ApiResponse<Study[]>>('/studies');
+    console.log('studiesApi.getAll - Response:', response);
     return response.data;
   },
 

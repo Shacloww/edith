@@ -14,7 +14,14 @@ import {
   DialogActions,
   Alert,
   CircularProgress,
-  Divider
+  Divider,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper
 } from '@mui/material';
 import {
   Visibility as VisibilityIcon,
@@ -25,6 +32,7 @@ import {
 import { predefinedProtocolsApi } from '../../services/api';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import ProtocolPreview from '../../components/ProtocolEditor/components/ProtocolPreview';
 
 interface Protocol {
   id: string;
@@ -364,13 +372,40 @@ const PredefinedProtocols: React.FC = () => {
                   <Typography variant="h6" gutterBottom>
                     Wyposażenie
                   </Typography>
-                  <Box sx={{ mb: 2 }}>
-                    {selectedProtocol.equipment.map((item: any, index: number) => (
-                      <Typography key={index} variant="body2" sx={{ mb: 1 }}>
-                        • <strong>{item.name || item}:</strong> {item.description || item.specifications || ''}
-                      </Typography>
-                    ))}
-                  </Box>
+                  <TableContainer component={Paper} sx={{ mb: 2 }}>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Nazwa</TableCell>
+                          <TableCell>Specyfikacja</TableCell>
+                          <TableCell>Uwagi</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {selectedProtocol.equipment.map((item: any, index: number) => (
+                          <TableRow key={index}>
+                            <TableCell>
+                              {typeof item === 'string' ? item : item.name || item}
+                            </TableCell>
+                            <TableCell>
+                              {typeof item === 'object' && item.specification 
+                                ? item.specification 
+                                : typeof item === 'object' && item.specifications 
+                                ? item.specifications 
+                                : '-'
+                              }
+                            </TableCell>
+                            <TableCell>
+                              {typeof item === 'object' 
+                                ? (item.model || item.notes || '-')
+                                : '-'
+                              }
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
                   <Divider sx={{ my: 2 }} />
                 </>
               )}
@@ -381,15 +416,43 @@ const PredefinedProtocols: React.FC = () => {
                   <Typography variant="h6" gutterBottom>
                     Materiały i odczynniki
                   </Typography>
-                  <Box sx={{ mb: 2 }}>
-                    {selectedProtocol.materials.map((material: any, index: number) => (
-                      <Typography key={index} variant="body2" sx={{ mb: 1 }}>
-                        • <strong>{typeof material === 'string' ? material : material.name}:</strong> {
-                          typeof material === 'object' ? (material.grade || material.purity || '') : ''
-                        }
-                      </Typography>
-                    ))}
-                  </Box>
+                  <TableContainer component={Paper} sx={{ mb: 2 }}>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Nazwa</TableCell>
+                          <TableCell>Specyfikacja</TableCell>
+                          <TableCell>Uwagi</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {selectedProtocol.materials.map((item: any, index: number) => (
+                          <TableRow key={index}>
+                            <TableCell>
+                              {typeof item === 'string' ? item : item.name || item}
+                            </TableCell>
+                            <TableCell>
+                              {typeof item === 'object' && item.specification 
+                                ? item.specification 
+                                : typeof item === 'object' && item.grade 
+                                ? item.grade 
+                                : typeof item === 'object' && item.purity 
+                                ? item.purity 
+                                : '-'
+                              }
+                            </TableCell>
+                            <TableCell>
+                              {typeof item === 'object' 
+                                ? (item.quantity ? `${item.quantity} ${item.unit || ''}` : 
+                                   item.notes ? item.notes : '-')
+                                : '-'
+                              }
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
                   <Divider sx={{ my: 2 }} />
                 </>
               )}
@@ -415,7 +478,7 @@ const PredefinedProtocols: React.FC = () => {
               <Typography variant="h6" gutterBottom>
                 Procedura ({selectedProtocol.steps?.length || 0} kroków)
               </Typography>
-              {selectedProtocol.steps?.length > 0 && (
+              {selectedProtocol.steps?.length > 0 ? (
                 <Box sx={{ mb: 2 }}>
                   {selectedProtocol.steps.map((step: any, index: number) => (
                     <Box key={index} sx={{ mb: 2, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
@@ -445,6 +508,10 @@ const PredefinedProtocols: React.FC = () => {
                     </Box>
                   ))}
                 </Box>
+              ) : (
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontStyle: 'italic' }}>
+                  Brak zdefiniowanych kroków procedury
+                </Typography>
               )}
 
               {/* Obliczenia */}
@@ -473,18 +540,58 @@ const PredefinedProtocols: React.FC = () => {
               )}
 
               {/* Kryteria akceptacji */}
-              {selectedProtocol.acceptanceCriteria?.length > 0 && (
+              {selectedProtocol.acceptanceCriteria && (
+                (Array.isArray(selectedProtocol.acceptanceCriteria) && selectedProtocol.acceptanceCriteria.length > 0) ||
+                (typeof selectedProtocol.acceptanceCriteria === 'object' && Object.keys(selectedProtocol.acceptanceCriteria).length > 0)
+              ) && (
                 <>
                   <Divider sx={{ my: 2 }} />
                   <Typography variant="h6" gutterBottom color="success.main">
                     Kryteria akceptacji
                   </Typography>
                   <Box sx={{ mb: 2 }}>
-                    {selectedProtocol.acceptanceCriteria.map((criterion: string, index: number) => (
-                      <Typography key={index} variant="body2" sx={{ mb: 1 }} color="success.main">
-                        ✓ {criterion}
-                      </Typography>
-                    ))}
+                    {Array.isArray(selectedProtocol.acceptanceCriteria) ? (
+                      selectedProtocol.acceptanceCriteria.map((criterion: string, index: number) => (
+                        <Typography key={index} variant="body2" sx={{ mb: 1 }} color="success.main">
+                          ✓ {criterion}
+                        </Typography>
+                      ))
+                    ) : (
+                      Object.entries(selectedProtocol.acceptanceCriteria).map(([key, value]: [string, any]) => (
+                        <Typography key={key} variant="body2" sx={{ mb: 1 }} color="success.main">
+                          ✓ <strong>{key}:</strong> {typeof value === 'object' ? JSON.stringify(value) : value}
+                        </Typography>
+                      ))
+                    )}
+                  </Box>
+                </>
+              )}
+
+              {/* Typowe wartości */}
+              {selectedProtocol.typicalValues && (
+                (Array.isArray(selectedProtocol.typicalValues) && selectedProtocol.typicalValues.length > 0) ||
+                (typeof selectedProtocol.typicalValues === 'object' && Object.keys(selectedProtocol.typicalValues).length > 0)
+              ) && (
+                <>
+                  <Divider sx={{ my: 2 }} />
+                  <Typography variant="h6" gutterBottom color="info.main">
+                    Typowe wartości
+                  </Typography>
+                  <Box sx={{ mb: 2 }}>
+                    {Array.isArray(selectedProtocol.typicalValues) ? (
+                      selectedProtocol.typicalValues.map((value: any, index: number) => (
+                        <Typography key={index} variant="body2" sx={{ mb: 1 }}>
+                          • <strong>{value.material || value.parameter || `Wartość ${index + 1}`}:</strong> {value.value || value.range || '-'} {value.unit ? `(${value.unit})` : ''}
+                          {value.notes && <span style={{ color: '#666' }}> - {value.notes}</span>}
+                        </Typography>
+                      ))
+                    ) : (
+                      Object.entries(selectedProtocol.typicalValues).map(([key, value]: [string, any]) => (
+                        <Typography key={key} variant="body2" sx={{ mb: 1 }}>
+                          • <strong>{key}:</strong> {typeof value === 'object' ? JSON.stringify(value) : value}
+                        </Typography>
+                      ))
+                    )}
                   </Box>
                 </>
               )}
@@ -506,6 +613,23 @@ const PredefinedProtocols: React.FC = () => {
                           <strong>Rozwiązanie:</strong> {issue.solution}
                         </Typography>
                       </Box>
+                    ))}
+                  </Box>
+                </>
+              )}
+
+              {/* Notatki */}
+              {selectedProtocol.notes && selectedProtocol.notes.length > 0 && (
+                <>
+                  <Divider sx={{ my: 2 }} />
+                  <Typography variant="h6" gutterBottom>
+                    Notatki
+                  </Typography>
+                  <Box sx={{ mb: 2 }}>
+                    {selectedProtocol.notes.map((note: string, index: number) => (
+                      <Typography key={index} variant="body2" sx={{ mb: 1 }}>
+                        📝 {note}
+                      </Typography>
                     ))}
                   </Box>
                 </>

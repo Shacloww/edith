@@ -81,19 +81,26 @@ export const useStudies = (): UseStudiesReturn => {
 
   // Studies API calls
   const fetchStudies = useCallback(async () => {
+    console.log('fetchStudies - Starting...');
     setIsLoading(true);
     setError(null);
     try {
+      console.log('fetchStudies - Calling API...');
       const response = await studiesApi.getAll();
+      console.log('fetchStudies - API response:', response);
       if (response.success && response.data) {
         setStudies(response.data);
+        console.log('fetchStudies - Studies set:', response.data);
       } else {
         setError(response.error || 'Błąd podczas pobierania badań');
+        console.error('fetchStudies - API error:', response.error);
       }
     } catch (err) {
+      console.error('fetchStudies - Network error:', err);
       setError('Błąd połączenia z serwerem');
     } finally {
       setIsLoading(false);
+      console.log('fetchStudies - Finished');
     }
   }, []);
 

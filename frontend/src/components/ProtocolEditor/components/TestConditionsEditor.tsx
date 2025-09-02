@@ -64,7 +64,29 @@ const TestConditionsEditor: React.FC<TestConditionsEditorProps> = ({
   updateProtocol,
   errors
 }) => {
-  const conditions = protocol.testConditions || [];
+  // Normalize testConditions to always be an array
+  const normalizeTestConditions = (conditions: any): TestCondition[] => {
+    if (!conditions) return [];
+    if (Array.isArray(conditions)) return conditions;
+    
+    // If it's an object (key-value pairs), convert to array
+    if (typeof conditions === 'object') {
+      return Object.entries(conditions).map(([key, value], index) => ({
+        id: `tc-${index}`,
+        name: key,
+        value: String(value),
+        unit: '',
+        tolerance: '',
+        notes: '',
+        category: 'environmental',
+        required: true
+      }));
+    }
+    
+    return [];
+  };
+
+  const conditions = normalizeTestConditions(protocol.testConditions);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCondition, setEditingCondition] = useState<TestCondition | null>(null);
   const [currentTab, setCurrentTab] = useState(0);

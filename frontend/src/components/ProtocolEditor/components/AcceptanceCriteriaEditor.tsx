@@ -74,7 +74,29 @@ const AcceptanceCriteriaEditor: React.FC<AcceptanceCriteriaEditorProps> = ({
   updateProtocol,
   errors
 }) => {
-  const criteria = protocol.acceptanceCriteria || [];
+  // Konwertuj acceptanceCriteria z różnych formatów na tablicę obiektów
+  const rawCriteria = protocol.acceptanceCriteria || [];
+  const criteria = Array.isArray(rawCriteria) 
+    ? rawCriteria.map((item: any, index: number) => {
+        if (typeof item === 'string') {
+          // Konwertuj string na obiekt AcceptanceCriterion
+          return {
+            id: `criterion-${index}`,
+            name: `Kryterium ${index + 1}`,
+            description: item,
+            parameter: '',
+            minValue: '',
+            maxValue: '',
+            unit: '',
+            type: 'qualitative' as const,
+            required: true,
+            priority: 'high' as const
+          };
+        }
+        return item; // Już jest obiektem
+      })
+    : []; // Jeśli nie jest tablicą, zwróć pustą tablicę
+    
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCriterion, setEditingCriterion] = useState<AcceptanceCriterion | null>(null);
   

@@ -114,7 +114,7 @@ export interface StudyTemplate {
   id?: string;
   name: string;
   description?: string;
-  protocolId: string;
+  protocolId?: string | null; // Opcjonalne dla predefiniowanych protokołów
   protocolName?: string;
   category?: string;
   dataCollectionPlan: DataCollectionStep[];
@@ -131,7 +131,7 @@ export interface Study {
   name: string;
   title?: string; // Backward compatibility
   description?: string;
-  protocolId: string;
+  protocolId?: string | null; // Opcjonalne dla predefiniowanych protokołów
   protocolName?: string; // Cache field
   category?: string;
   status: StudyStatus;

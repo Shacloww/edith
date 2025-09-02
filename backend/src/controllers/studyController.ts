@@ -115,17 +115,59 @@ export const createStudy = async (
 ): Promise<void> => {
   try {
     const data: CreateStudyDto = req.body;
-    const userId = 'temp-user-id'; // TODO: Pobierz z middleware auth
     const prisma = (req as any).prisma;
 
     console.log('POST /api/studies - Request body:', data);
 
-    // Sprawdź czy protokół istnieje (predefiniowany)
-    const protocol = getProtocolById(data.protocolId);
-    if (!protocol) {
+    // Sprawdź/stwórz dummy user dla development
+    let userId = 'temp-user-id';
+    const existingUser = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!existingUser) {
+      const dummyUser = await prisma.user.create({
+        data: {
+          id: userId,
+          email: 'temp@example.com',
+          username: 'tempuser',
+          passwordHash: 'dummy',
+          firstName: 'Temp',
+          lastName: 'User'
+        }
+      });
+      console.log('Created dummy user:', dummyUser.id);
+    }
+
+    let protocol: any = null;
+    let isPredefindedProtocol = false;
+
+    // Sprawdź czy to predefiniowany protokół (z plików TS)
+    if (data.protocolId) {
+      protocol = getProtocolById(data.protocolId);
+      if (protocol) {
+        isPredefindedProtocol = true;
+        console.log('Using predefiniend protocol:', protocol.title);
+      } else {
+        // Sprawdź w bazie danych
+        const dbProtocol = await prisma.protocol.findUnique({
+          where: { id: data.protocolId }
+        });
+        if (dbProtocol) {
+          protocol = dbProtocol;
+          console.log('Using database protocol:', dbProtocol.title);
+        } else {
+          res.status(400).json({
+            success: false,
+            error: 'Protocol not found'
+          });
+          return;
+        }
+      }
+    } else {
       res.status(400).json({
         success: false,
-        error: 'Protocol not found'
+        error: 'Protocol ID is required'
       });
       return;
     }
@@ -134,8 +176,8 @@ export const createStudy = async (
     const studyData = {
       name: data.name,
       description: data.description,
-      protocolId: data.protocolId,
-      protocolName: protocol.title,
+      protocolId: isPredefindedProtocol ? null : data.protocolId, // null dla predefiniowanych
+      protocolName: data.protocolName || protocol.title,
       category: data.category || protocol.category,
       settings: data.settings || {},
       parameters: data.parameters || [],

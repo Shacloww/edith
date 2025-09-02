@@ -248,6 +248,7 @@ export interface CreateStudyDto {
   name: string;
   description?: string;
   protocolId: string;
+  protocolName?: string;
   category?: string;
   settings?: StudySettings;
   parameters?: StudyParameter[];

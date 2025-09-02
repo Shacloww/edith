@@ -57,7 +57,32 @@ const TypicalValuesEditor: React.FC<TypicalValuesEditorProps> = ({
   updateProtocol,
   errors
 }) => {
-  const typicalValues = protocol.typicalValues || [];
+  // Normalize typicalValues to always be an array
+  const normalizeTypicalValues = (values: any): TypicalValue[] => {
+    if (!values) return [];
+    if (Array.isArray(values)) return values;
+    
+    // If it's an object (key-value pairs), convert to array
+    if (typeof values === 'object') {
+      return Object.entries(values).map(([key, value], index) => ({
+        id: `tv-${index}`,
+        parameter: key,
+        material: '',
+        value: String(value),
+        unit: '',
+        range: { min: '', max: '' },
+        conditions: '',
+        category: 'mechanical',
+        source: '',
+        notes: '',
+        isReference: false
+      }));
+    }
+    
+    return [];
+  };
+
+  const typicalValues = normalizeTypicalValues(protocol.typicalValues);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingValue, setEditingValue] = useState<TypicalValue | null>(null);
   const [currentCategory, setCurrentCategory] = useState('mechanical');

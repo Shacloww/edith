@@ -38,18 +38,19 @@ const getStatusLabel = (status: StudyTemplate['status']): string => {
 };
 
 const EditStudy: React.FC = () => {
+  console.log('EditStudy component rendered');
   const navigate = useNavigate();
-  const { studyId } = useParams<{ studyId: string }>();
+  const { id } = useParams<{ id: string }>();
   
   const [studyData, setStudyData] = useState<StudyTemplate | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (studyId) {
-      loadStudy(studyId);
+    if (id) {
+      loadStudy(id);
     }
-  }, [studyId]);
+  }, [id]);
 
   const loadStudy = async (id: string) => {
     try {
@@ -207,9 +208,9 @@ const EditStudy: React.FC = () => {
                 <Grid item xs={12} sm={6}>
                   <FormControl fullWidth disabled>
                     <InputLabel>Protokół</InputLabel>
-                    <Select value={studyData.protocolId}>
-                      <MenuItem value={studyData.protocolId}>
-                        {studyData.protocolName}
+                    <Select value={studyData.protocolId || ''}>
+                      <MenuItem value={studyData.protocolId || ''}>
+                        {studyData.protocolName || 'Nieznany protokół'}
                       </MenuItem>
                     </Select>
                   </FormControl>

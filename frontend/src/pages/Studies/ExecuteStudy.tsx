@@ -63,7 +63,7 @@ import { useStudies } from '../../hooks';
 
 const ExecuteStudy: React.FC = () => {
   const navigate = useNavigate();
-  const { studyId } = useParams<{ studyId: string }>();
+  const { id } = useParams<{ id: string }>();
   const { fetchStudy, study, isLoading } = useStudies();
   
   const [studyTemplate, setStudyTemplate] = useState<StudyTemplate | null>(null);
@@ -78,10 +78,10 @@ const ExecuteStudy: React.FC = () => {
   const [autoSave, setAutoSave] = useState(true);
 
   useEffect(() => {
-    if (studyId) {
-      fetchStudy(studyId);
+    if (id) {
+      fetchStudy(id);
     }
-  }, [studyId, fetchStudy]);
+  }, [id, fetchStudy]);
 
   useEffect(() => {
     if (study) {
@@ -90,7 +90,7 @@ const ExecuteStudy: React.FC = () => {
         id: study.id,
         name: study.name,
         description: study.description,
-        protocolId: study.protocolId,
+        protocolId: study.protocolId || undefined,
         protocolName: study.protocolName,
         category: study.category,
         dataCollectionPlan: [], // Will be loaded from protocol

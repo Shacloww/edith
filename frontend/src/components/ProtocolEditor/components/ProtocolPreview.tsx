@@ -28,7 +28,11 @@ import {
   Calculate as CalcIcon,
   Security as SafetyIcon,
   Build as EquipmentIcon,
-  Inventory as MaterialIcon
+  Inventory as MaterialIcon,
+  CheckCircle as AcceptanceIcon,
+  Warning as IssuesIcon,
+  BarChart as ValuesIcon,
+  Notes as NotesIcon
 } from '@mui/icons-material';
 import { getCategoryColor, getDifficultyColor } from '../utils/helpers';
 
@@ -104,7 +108,7 @@ const ProtocolPreview: React.FC<ProtocolPreviewProps> = ({ protocol }) => {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
               <AuthorIcon fontSize="small" />
               <Typography variant="body2" fontWeight="medium">Autor:</Typography>
-              <Typography variant="body2">{protocol.author || 'Nie podano'}</Typography>
+              <Typography variant="body2">{protocol.author || 'Brak'}</Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
               <DateIcon fontSize="small" />
@@ -114,7 +118,7 @@ const ProtocolPreview: React.FC<ProtocolPreviewProps> = ({ protocol }) => {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
               <DurationIcon fontSize="small" />
               <Typography variant="body2" fontWeight="medium">Czas trwania:</Typography>
-              <Typography variant="body2">{protocol.estimatedDuration || 'Nie podano'}</Typography>
+              <Typography variant="body2">{protocol.estimatedDuration || 'Brak'}</Typography>
             </Box>
           </Grid>
           <Grid item xs={12} md={6}>
@@ -173,86 +177,98 @@ const ProtocolPreview: React.FC<ProtocolPreviewProps> = ({ protocol }) => {
       )}
 
       {/* Wyposażenie */}
-      {protocol.equipment && protocol.equipment.length > 0 && renderSection(
+      {renderSection(
         'Wyposażenie',
         <EquipmentIcon color="primary" />,
-        <TableContainer>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>Nazwa</TableCell>
-                <TableCell>Specyfikacja</TableCell>
-                <TableCell>Uwagi</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {protocol.equipment.map((item: any, index: number) => (
-                <TableRow key={index}>
-                  <TableCell>
-                    {typeof item === 'string' ? item : item.name || item}
-                  </TableCell>
-                  <TableCell>
-                    {typeof item === 'object' && item.specification 
-                      ? item.specification 
-                      : typeof item === 'object' && item.specifications 
-                      ? item.specifications 
-                      : '-'
-                    }
-                  </TableCell>
-                  <TableCell>
-                    {typeof item === 'object' 
-                      ? (item.model || item.notes || '-')
-                      : '-'
-                    }
-                  </TableCell>
+        protocol.equipment && protocol.equipment.length > 0 ? (
+          <TableContainer>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Nazwa</TableCell>
+                  <TableCell>Specyfikacja</TableCell>
+                  <TableCell>Uwagi</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                {protocol.equipment.map((item: any, index: number) => (
+                  <TableRow key={index}>
+                    <TableCell>
+                      {typeof item === 'string' ? item : item.name || item}
+                    </TableCell>
+                    <TableCell>
+                      {typeof item === 'object' && item.specification 
+                        ? item.specification 
+                        : typeof item === 'object' && item.specifications 
+                        ? item.specifications 
+                        : '-'
+                      }
+                    </TableCell>
+                    <TableCell>
+                      {typeof item === 'object' 
+                        ? (item.model || item.notes || '-')
+                        : '-'
+                      }
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        ) : (
+          <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+            Brak wyposażenia
+          </Typography>
+        )
       )}
 
       {/* Materiały */}
-      {protocol.materials && protocol.materials.length > 0 && renderSection(
+      {renderSection(
         'Materiały i odczynniki',
         <MaterialIcon color="primary" />,
-        <TableContainer>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>Nazwa</TableCell>
-                <TableCell>Specyfikacja</TableCell>
-                <TableCell>Uwagi</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {protocol.materials.map((item: any, index: number) => (
-                <TableRow key={index}>
-                  <TableCell>
-                    {typeof item === 'string' ? item : item.name || item}
-                  </TableCell>
-                  <TableCell>
-                    {typeof item === 'object' && item.specification 
-                      ? item.specification 
-                      : typeof item === 'object' && item.grade 
-                      ? item.grade 
-                      : typeof item === 'object' && item.purity 
-                      ? item.purity 
-                      : '-'
-                    }
-                  </TableCell>
-                  <TableCell>
-                    {typeof item === 'object' 
-                      ? (item.quantity ? `${item.quantity} ${item.unit || ''}` : 
-                         item.notes ? item.notes : '-')
-                      : '-'
-                    }
-                  </TableCell>
+        protocol.materials && protocol.materials.length > 0 ? (
+          <TableContainer>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Nazwa</TableCell>
+                  <TableCell>Specyfikacja</TableCell>
+                  <TableCell>Uwagi</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                {protocol.materials.map((item: any, index: number) => (
+                  <TableRow key={index}>
+                    <TableCell>
+                      {typeof item === 'string' ? item : item.name || item}
+                    </TableCell>
+                    <TableCell>
+                      {typeof item === 'object' && item.specification 
+                        ? item.specification 
+                        : typeof item === 'object' && item.grade 
+                        ? item.grade 
+                        : typeof item === 'object' && item.purity 
+                        ? item.purity 
+                        : '-'
+                      }
+                    </TableCell>
+                    <TableCell>
+                      {typeof item === 'object' 
+                        ? (item.quantity ? `${item.quantity} ${item.unit || ''}` : 
+                           item.notes ? item.notes : '-')
+                        : '-'
+                      }
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        ) : (
+          <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+            Brak materiałów
+          </Typography>
+        )
       )}
 
       {/* Warunki testowe */}
@@ -394,6 +410,127 @@ const ProtocolPreview: React.FC<ProtocolPreviewProps> = ({ protocol }) => {
             </Paper>
           ))}
         </Box>
+      )}
+
+      {/* Kryteria akceptacji */}
+      {protocol.acceptanceCriteria && (
+        (Array.isArray(protocol.acceptanceCriteria) && protocol.acceptanceCriteria.length > 0) ||
+        (typeof protocol.acceptanceCriteria === 'object' && Object.keys(protocol.acceptanceCriteria).length > 0)
+      ) && renderSection(
+        'Kryteria akceptacji',
+        <AcceptanceIcon color="success" />,
+        <Box>
+          {Array.isArray(protocol.acceptanceCriteria) ? (
+            <List>
+              {protocol.acceptanceCriteria.map((criterion: string, index: number) => (
+                <ListItem key={index}>
+                  <ListItemIcon>
+                    <AcceptanceIcon color="success" fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={criterion}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          ) : (
+            <Box>
+              {Object.entries(protocol.acceptanceCriteria).map(([key, value]: [string, any]) => (
+                <Typography key={key} variant="body2" sx={{ mb: 1 }}>
+                  <AcceptanceIcon color="success" fontSize="small" sx={{ mr: 1, verticalAlign: 'middle' }} />
+                  <strong>{key}:</strong> {typeof value === 'object' ? JSON.stringify(value) : value}
+                </Typography>
+              ))}
+            </Box>
+          )}
+        </Box>
+      )}
+
+      {/* Typowe problemy i rozwiązania */}
+      {protocol.commonIssues && protocol.commonIssues.length > 0 && renderSection(
+        'Typowe problemy i rozwiązania',
+        <IssuesIcon color="warning" />,
+        <Box>
+          {protocol.commonIssues.map((issue: any, index: number) => (
+            <Paper key={index} sx={{ p: 2, mb: 2, bgcolor: 'warning.50', border: '1px solid', borderColor: 'warning.200' }}>
+              <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 1, color: 'warning.main' }}>
+                <IssuesIcon fontSize="small" sx={{ mr: 1, verticalAlign: 'middle' }} />
+                Problem: {typeof issue === 'string' ? issue : issue.issue}
+              </Typography>
+              {typeof issue === 'object' && issue.cause && (
+                <Typography variant="body2" sx={{ mb: 1 }}>
+                  <strong>Przyczyna:</strong> {issue.cause}
+                </Typography>
+              )}
+              {typeof issue === 'object' && issue.solution && (
+                <Typography variant="body2">
+                  <strong>Rozwiązanie:</strong> {issue.solution}
+                </Typography>
+              )}
+            </Paper>
+          ))}
+        </Box>
+      )}
+
+      {/* Typowe wartości */}
+      {protocol.typicalValues && (
+        (Array.isArray(protocol.typicalValues) && protocol.typicalValues.length > 0) ||
+        (typeof protocol.typicalValues === 'object' && Object.keys(protocol.typicalValues).length > 0)
+      ) && renderSection(
+        'Typowe wartości',
+        <ValuesIcon color="info" />,
+        <Box>
+          {Array.isArray(protocol.typicalValues) ? (
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Materiał/Parametr</TableCell>
+                    <TableCell>Wartość</TableCell>
+                    <TableCell>Jednostka</TableCell>
+                    <TableCell>Uwagi</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {protocol.typicalValues.map((value: any, index: number) => (
+                    <TableRow key={index}>
+                      <TableCell>{value.material || value.parameter || `Wartość ${index + 1}`}</TableCell>
+                      <TableCell>{value.value || value.range || '-'}</TableCell>
+                      <TableCell>{value.unit || '-'}</TableCell>
+                      <TableCell>{value.notes || '-'}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          ) : (
+            <Box>
+              {Object.entries(protocol.typicalValues).map(([key, value]: [string, any]) => (
+                <Typography key={key} variant="body2" sx={{ mb: 1 }}>
+                  <strong>{key}:</strong> {typeof value === 'object' ? JSON.stringify(value) : value}
+                </Typography>
+              ))}
+            </Box>
+          )}
+        </Box>
+      )}
+
+      {/* Notatki */}
+      {protocol.notes && protocol.notes.length > 0 && renderSection(
+        'Notatki',
+        <NotesIcon color="primary" />,
+        <List>
+          {protocol.notes.map((note: string, index: number) => (
+            <ListItem key={index}>
+              <ListItemIcon>
+                <NotesIcon color="primary" fontSize="small" />
+              </ListItemIcon>
+              <ListItemText
+                primary={note}
+              />
+            </ListItem>
+          ))}
+        </List>
       )}
 
       {/* Bibliografia */}

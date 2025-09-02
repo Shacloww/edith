@@ -244,12 +244,15 @@ const CreateStudy: React.FC = () => {
 
   const loadUserProtocols = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/research-schemas');
+      const response = await fetch('http://localhost:5000/api/protocols');
       if (response.ok) {
         const data = await response.json();
         
         if (data.success && data.data) {
-          const protocols = data.data.map((schema: any) => ({
+          // Filtruj tylko protokoły użytkownika (nie predefiniowane)
+          const userProtocolsOnly = data.data.filter((protocol: any) => protocol.type === 'USER');
+          
+          const protocols = userProtocolsOnly.map((schema: any) => ({
             id: schema.id,
             title: schema.title,
             category: schema.category || 'Własne',
@@ -403,19 +406,40 @@ const CreateStudy: React.FC = () => {
 
   const handleSaveStudy = async () => {
     try {
-      // TODO: Save to API
-      const studyToSave: StudyTemplate = {
-        ...studyData,
-        id: `study-${Date.now()}`,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+      const studyToSave = {
+        name: studyData.name,
+        description: studyData.description,
+        protocolId: studyData.protocolId,
+        protocolName: studyData.protocolName,
+        category: studyData.category,
+        parameters: studyData.parameters,
+        dataCollectionPlan: studyData.dataCollectionPlan,
+        settings: studyData.settings,
+        status: 'DRAFT',
         createdBy: 'Current User' // TODO: Get from auth
-      } as StudyTemplate;
+      };
 
-      console.log('Saving study:', studyToSave);
+      console.log('Saving study to API:', studyToSave);
+      
+      const response = await fetch('http://localhost:5000/api/studies', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(studyToSave),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Failed to save study: ${errorData.message || response.statusText}`);
+      }
+
+      const savedStudy = await response.json();
+      console.log('Study saved successfully:', savedStudy);
       navigate('/studies');
     } catch (error) {
       console.error('Error saving study:', error);
+      alert(`Błąd podczas zapisywania badania: ${error instanceof Error ? error.message : 'Nieznany błąd'}`);
     }
   };
 
