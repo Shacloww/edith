@@ -2,7 +2,8 @@
 
 <div align="center">
 
-![Edith Logo](./frontend/public/ico.png)
+<img src="./frontend/public/ico.png" alt="Edith Logo" width="120"/>
+
 
 **Professional research survey platform with advanced statistical analysis**
 
