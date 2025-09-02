@@ -127,25 +127,43 @@ const ProtocolPreview: React.FC<ProtocolPreviewProps> = ({ protocol }) => {
       )}
 
       {/* Przegląd badania */}
-      {renderSection(
+      {(protocol.overview || protocol.purpose || protocol.scope) && renderSection(
         'Przegląd badania',
         <CategoryIcon color="primary" />,
         <Box>
           <Typography variant="body2" fontWeight="medium" sx={{ mb: 1 }}>Cel badania:</Typography>
           <Typography variant="body2" paragraph>
-            {protocol.purpose || 'Nie określono celu badania'}
+            {protocol.overview?.purpose || protocol.purpose || 'Nie określono celu badania'}
           </Typography>
           
           <Typography variant="body2" fontWeight="medium" sx={{ mb: 1 }}>Zakres badania:</Typography>
           <Typography variant="body2" paragraph>
-            {protocol.scope || 'Nie określono zakresu badania'}
+            {protocol.overview?.scope || protocol.scope || 'Nie określono zakresu badania'}
           </Typography>
+
+          {protocol.overview?.principles && (
+            <>
+              <Typography variant="body2" fontWeight="medium" sx={{ mb: 1 }}>Zasady działania:</Typography>
+              <Typography variant="body2" paragraph>
+                {protocol.overview.principles}
+              </Typography>
+            </>
+          )}
+
+          {protocol.overview?.applications && (
+            <>
+              <Typography variant="body2" fontWeight="medium" sx={{ mb: 1 }}>Zastosowania:</Typography>
+              <Typography variant="body2" paragraph>
+                {protocol.overview.applications}
+              </Typography>
+            </>
+          )}
           
-          {protocol.applicableStandards && protocol.applicableStandards.length > 0 && (
+          {(protocol.overview?.standards || protocol.applicableStandards) && (
             <>
               <Typography variant="body2" fontWeight="medium" sx={{ mb: 1 }}>Normy stosowane:</Typography>
               <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                {protocol.applicableStandards.map((standard: string, index: number) => (
+                {(protocol.overview?.standards || protocol.applicableStandards || []).map((standard: string, index: number) => (
                   <Chip key={index} label={standard} size="small" variant="outlined" />
                 ))}
               </Box>
@@ -163,24 +181,29 @@ const ProtocolPreview: React.FC<ProtocolPreviewProps> = ({ protocol }) => {
             <TableHead>
               <TableRow>
                 <TableCell>Nazwa</TableCell>
-                <TableCell>Model</TableCell>
                 <TableCell>Specyfikacja</TableCell>
-                <TableCell>Status</TableCell>
+                <TableCell>Uwagi</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {protocol.equipment.map((item: any, index: number) => (
                 <TableRow key={index}>
-                  <TableCell>{item.name}</TableCell>
-                  <TableCell>{item.model || '-'}</TableCell>
-                  <TableCell>{item.specifications || '-'}</TableCell>
                   <TableCell>
-                    <Chip
-                      label={item.required ? 'Wymagane' : 'Opcjonalne'}
-                      size="small"
-                      color={item.required ? 'error' : 'default'}
-                      variant="outlined"
-                    />
+                    {typeof item === 'string' ? item : item.name || item}
+                  </TableCell>
+                  <TableCell>
+                    {typeof item === 'object' && item.specification 
+                      ? item.specification 
+                      : typeof item === 'object' && item.specifications 
+                      ? item.specifications 
+                      : '-'
+                    }
+                  </TableCell>
+                  <TableCell>
+                    {typeof item === 'object' 
+                      ? (item.model || item.notes || '-')
+                      : '-'
+                    }
                   </TableCell>
                 </TableRow>
               ))}
@@ -198,30 +221,51 @@ const ProtocolPreview: React.FC<ProtocolPreviewProps> = ({ protocol }) => {
             <TableHead>
               <TableRow>
                 <TableCell>Nazwa</TableCell>
-                <TableCell>Ilość</TableCell>
                 <TableCell>Specyfikacja</TableCell>
-                <TableCell>Status</TableCell>
+                <TableCell>Uwagi</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {protocol.materials.map((item: any, index: number) => (
                 <TableRow key={index}>
-                  <TableCell>{item.name}</TableCell>
-                  <TableCell>{item.quantity} {item.unit}</TableCell>
-                  <TableCell>{item.specifications || '-'}</TableCell>
                   <TableCell>
-                    <Chip
-                      label={item.required ? 'Wymagane' : 'Opcjonalne'}
-                      size="small"
-                      color={item.required ? 'error' : 'default'}
-                      variant="outlined"
-                    />
+                    {typeof item === 'string' ? item : item.name || item}
+                  </TableCell>
+                  <TableCell>
+                    {typeof item === 'object' && item.specification 
+                      ? item.specification 
+                      : typeof item === 'object' && item.grade 
+                      ? item.grade 
+                      : typeof item === 'object' && item.purity 
+                      ? item.purity 
+                      : '-'
+                    }
+                  </TableCell>
+                  <TableCell>
+                    {typeof item === 'object' 
+                      ? (item.quantity ? `${item.quantity} ${item.unit || ''}` : 
+                         item.notes ? item.notes : '-')
+                      : '-'
+                    }
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </TableContainer>
+      )}
+
+      {/* Warunki testowe */}
+      {protocol.testConditions && Object.keys(protocol.testConditions).length > 0 && renderSection(
+        'Warunki testowe',
+        <DurationIcon color="info" />,
+        <Box>
+          {Object.entries(protocol.testConditions).map(([key, value], index) => (
+            <Typography key={index} variant="body2" sx={{ mb: 1 }}>
+              <strong>{key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}:</strong> {value as string}
+            </Typography>
+          ))}
+        </Box>
       )}
 
       {/* Bezpieczeństwo */}
@@ -235,8 +279,8 @@ const ProtocolPreview: React.FC<ProtocolPreviewProps> = ({ protocol }) => {
                 <SafetyIcon color="error" fontSize="small" />
               </ListItemIcon>
               <ListItemText
-                primary={guideline.guideline}
-                secondary={guideline.description}
+                primary={typeof guideline === 'string' ? guideline : guideline.guideline}
+                secondary={typeof guideline === 'object' ? guideline.description : undefined}
               />
             </ListItem>
           ))}
@@ -363,21 +407,23 @@ const ProtocolPreview: React.FC<ProtocolPreviewProps> = ({ protocol }) => {
                 primary={
                   <Box>
                     <Typography variant="body2" fontWeight="bold" component="span">
-                      [{index + 1}] {reference.title}
+                      [{index + 1}] {typeof reference === 'string' ? reference : reference.title}
                     </Typography>
                   </Box>
                 }
                 secondary={
-                  <Box>
-                    <Typography variant="body2" color="text.secondary">
-                      {reference.authors} ({reference.year})
-                    </Typography>
-                    {reference.source && (
-                      <Typography variant="caption" color="text.secondary">
-                        {reference.source}
+                  typeof reference === 'object' && (
+                    <Box>
+                      <Typography variant="body2" color="text.secondary">
+                        {reference.authors} ({reference.year})
                       </Typography>
-                    )}
-                  </Box>
+                      {reference.source && (
+                        <Typography variant="caption" color="text.secondary">
+                          {reference.source}
+                        </Typography>
+                      )}
+                    </Box>
+                  )
                 }
               />
             </ListItem>
@@ -388,7 +434,7 @@ const ProtocolPreview: React.FC<ProtocolPreviewProps> = ({ protocol }) => {
       {/* Stopka */}
       <Paper sx={{ p: 2, mt: 3, textAlign: 'center', bgcolor: 'grey.100' }}>
         <Typography variant="caption" color="text.secondary">
-          Protokół wygenerowany przez Edith Research Platform
+          Protokół wygenerowany przez Edith
         </Typography>
         <br />
         <Typography variant="caption" color="text.secondary">

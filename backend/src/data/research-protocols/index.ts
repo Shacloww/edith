@@ -86,21 +86,21 @@ export interface TypicalValue {
 
 // Eksport wszystkich protokołów
 export const ResearchProtocols: Record<string, any> = {
-  // 'iso-1133-mfr': iso1133Protocol,
-  'iso-289-mooney': iso289Protocol,
-  // 'astm-d412-tensile': astmD412Protocol,
-  'astm-c772-migration': astmC772Protocol,
-  'iso-1183-density': iso1183Protocol,
-  'iso-11357-dsc': iso11357Protocol,
-  'iso-3451-ash': iso3451Protocol,
-  'ul-94-flammability': ul94Protocol,
-  'astm-d2863-loi': astmD2863Protocol,
-  'astm-e28-softening': astmE28Protocol,
-  'iso-4892-weathering': iso4892Protocol,
-  'astm-d638-tensile': astmD638Protocol,
-  'astm-d790-flexural': astmD790Protocol,
-  'astm-d256-izod': astmD256Protocol,
-  'astm-d648-hdt': astmD648Protocol,
+  'iso-1133': iso1133Protocol,
+  'iso-289': iso289Protocol,
+  'astm-d412': astmD412Protocol,
+  'astm-c772': astmC772Protocol,
+  'iso-1183': iso1183Protocol,
+  'iso-11357': iso11357Protocol,
+  'iso-3451': iso3451Protocol,
+  'ul-94': ul94Protocol,
+  'astm-d2863': astmD2863Protocol,
+  'astm-e28-18': astmE28Protocol,
+  'iso-4892-2': iso4892Protocol,
+  'astm-d638': astmD638Protocol,
+  'astm-d790': astmD790Protocol,
+  'astm-d256': astmD256Protocol,
+  'astm-d648': astmD648Protocol,
 };
 
 // Funkcje pomocnicze

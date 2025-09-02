@@ -10,70 +10,28 @@ import {
   Button,
   Chip,
   Alert,
-  CircularProgress,
-  Fab,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem
+  CircularProgress
 } from '@mui/material';
 import { Add as AddIcon, Science as ScienceIcon, Assignment as AssignmentIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { useStudies, usePredefinedProtocols } from '../../hooks';
+import { useStudies } from '../../hooks';
 import { Study, StudyStatus } from '../../types';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [openCreateDialog, setOpenCreateDialog] = useState(false);
-  const [newStudyData, setNewStudyData] = useState({
-    name: '',
-    description: '',
-    protocolId: '',
-    category: ''
-  });
 
   const {
     studies,
     isLoading: studiesLoading,
     error: studiesError,
     fetchStudies,
-    createStudy,
     updateStudyStatus,
     deleteStudy
   } = useStudies();
 
-  const {
-    protocols: predefinedProtocols,
-    isLoading: protocolsLoading,
-    error: protocolsError,
-    fetchPredefinedProtocols
-  } = usePredefinedProtocols();
-
   useEffect(() => {
     fetchStudies();
-    fetchPredefinedProtocols();
-  }, [fetchStudies, fetchPredefinedProtocols]);
-
-  const handleCreateStudy = async () => {
-    if (!newStudyData.name || !newStudyData.protocolId) return;
-
-    const success = await createStudy({
-      name: newStudyData.name,
-      description: newStudyData.description,
-      protocolId: newStudyData.protocolId,
-      category: newStudyData.category
-    });
-
-    if (success) {
-      setOpenCreateDialog(false);
-      setNewStudyData({ name: '', description: '', protocolId: '', category: '' });
-    }
-  };
+  }, [fetchStudies]);
 
   const handleStatusChange = async (studyId: string, status: StudyStatus) => {
     await updateStudyStatus(studyId, status);
@@ -94,7 +52,7 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  if (studiesLoading || protocolsLoading) {
+  if (studiesLoading) {
     return (
       <Container>
         <Box display="flex" justifyContent="center" mt={4}>
@@ -114,7 +72,7 @@ const Dashboard: React.FC = () => {
           <Button
             variant="outlined"
             startIcon={<ScienceIcon />}
-            onClick={() => navigate('/predefined-protocols')}
+            onClick={() => navigate('/protocols/predefined')}
             sx={{ mr: 2 }}
           >
             Protokoły
@@ -122,16 +80,16 @@ const Dashboard: React.FC = () => {
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={() => setOpenCreateDialog(true)}
+            onClick={() => navigate('/studies/create')}
           >
             Nowe Badanie
           </Button>
         </Box>
       </Box>
 
-      {(studiesError || protocolsError) && (
+      {studiesError && (
         <Alert severity="error" sx={{ mb: 3 }}>
-          {studiesError || protocolsError}
+          {studiesError}
         </Alert>
       )}
 
@@ -150,7 +108,7 @@ const Dashboard: React.FC = () => {
                 <Button
                   variant="contained"
                   startIcon={<AddIcon />}
-                  onClick={() => setOpenCreateDialog(true)}
+                  onClick={() => navigate('/studies/create')}
                 >
                   Utwórz Badanie
                 </Button>
@@ -210,66 +168,6 @@ const Dashboard: React.FC = () => {
           ))
         )}
       </Grid>
-
-      {/* Create Study Dialog */}
-      <Dialog open={openCreateDialog} onClose={() => setOpenCreateDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Utwórz Nowe Badanie</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Nazwa badania"
-            fullWidth
-            variant="outlined"
-            value={newStudyData.name}
-            onChange={(e) => setNewStudyData({ ...newStudyData, name: e.target.value })}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            margin="dense"
-            label="Opis"
-            fullWidth
-            multiline
-            rows={3}
-            variant="outlined"
-            value={newStudyData.description}
-            onChange={(e) => setNewStudyData({ ...newStudyData, description: e.target.value })}
-            sx={{ mb: 2 }}
-          />
-          <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel>Protokół</InputLabel>
-            <Select
-              value={newStudyData.protocolId}
-              label="Protokół"
-              onChange={(e) => setNewStudyData({ ...newStudyData, protocolId: e.target.value })}
-            >
-              {predefinedProtocols.map((protocol) => (
-                <MenuItem key={protocol.id} value={protocol.id}>
-                  {protocol.title} ({protocol.standard})
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <TextField
-            margin="dense"
-            label="Kategoria"
-            fullWidth
-            variant="outlined"
-            value={newStudyData.category}
-            onChange={(e) => setNewStudyData({ ...newStudyData, category: e.target.value })}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenCreateDialog(false)}>Anuluj</Button>
-          <Button
-            onClick={handleCreateStudy}
-            variant="contained"
-            disabled={!newStudyData.name || !newStudyData.protocolId}
-          >
-            Utwórz
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Container>
   );
 };

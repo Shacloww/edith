@@ -253,14 +253,62 @@ const PredefinedProtocols: React.FC = () => {
         fullWidth
       >
         <DialogTitle>
-          <Box display="flex" alignItems="center">
-            <ScienceIcon sx={{ mr: 1 }} />
-            {selectedProtocol?.title}
+          <Box display="flex" alignItems="center" justifyContent="space-between">
+            <Box display="flex" alignItems="center">
+              <ScienceIcon sx={{ mr: 1 }} />
+              <Box>
+                <Typography variant="h6" component="div">
+                  {selectedProtocol?.title}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Szczegółowy podgląd protokołu badawczego
+                </Typography>
+              </Box>
+            </Box>
+            <Box>
+              {selectedProtocol && (
+                <>
+                  <Chip
+                    label={translateCategory(selectedProtocol.category)}
+                    color={getCategoryColor(selectedProtocol.category)}
+                    size="small"
+                    sx={{ mr: 1 }}
+                  />
+                  <Chip
+                    label={translateDifficulty(selectedProtocol.difficulty)}
+                    color={getDifficultyColor(selectedProtocol.difficulty)}
+                    size="small"
+                  />
+                </>
+              )}
+            </Box>
           </Box>
         </DialogTitle>
         <DialogContent>
           {selectedProtocol && (
             <Box>
+              {/* Podstawowe informacje */}
+              <Typography variant="h6" gutterBottom>
+                Informacje podstawowe
+              </Typography>
+              <Box sx={{ mb: 2, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                <Typography variant="body2">
+                  <strong>Kategoria:</strong> {translateCategory(selectedProtocol.category)}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Poziom trudności:</strong> {translateDifficulty(selectedProtocol.difficulty)}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Czas trwania:</strong> {selectedProtocol.estimatedDuration}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Standardy:</strong> {selectedProtocol.standards?.join(', ') || 'Nie podano'}
+                </Typography>
+              </Box>
+
+              <Divider sx={{ my: 2 }} />
+
+              {/* Przegląd */}
               <Typography variant="h6" gutterBottom>
                 Przegląd
               </Typography>
@@ -270,55 +318,214 @@ const PredefinedProtocols: React.FC = () => {
               <Typography variant="body2" paragraph>
                 <strong>Zakres:</strong> {selectedProtocol.overview?.scope}
               </Typography>
+              {selectedProtocol.overview?.applications && (
+                <Typography variant="body2" paragraph>
+                  <strong>Zastosowania:</strong> {selectedProtocol.overview.applications}
+                </Typography>
+              )}
               
               <Divider sx={{ my: 2 }} />
 
-              <Typography variant="h6" gutterBottom>
-                Sprzęt i materiały
-              </Typography>
+              {/* Warunki testowe */}
+              {selectedProtocol.testConditions && Object.keys(selectedProtocol.testConditions).length > 0 && (
+                <>
+                  <Typography variant="h6" gutterBottom>
+                    Warunki testowe
+                  </Typography>
+                  <Box sx={{ mb: 2, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 1 }}>
+                    {selectedProtocol.testConditions.temperature && (
+                      <Typography variant="body2">
+                        <strong>Temperatura:</strong> {selectedProtocol.testConditions.temperature}
+                      </Typography>
+                    )}
+                    {selectedProtocol.testConditions.humidity && (
+                      <Typography variant="body2">
+                        <strong>Wilgotność:</strong> {selectedProtocol.testConditions.humidity}
+                      </Typography>
+                    )}
+                    {selectedProtocol.testConditions.atmosphere && (
+                      <Typography variant="body2">
+                        <strong>Atmosfera:</strong> {selectedProtocol.testConditions.atmosphere}
+                      </Typography>
+                    )}
+                    {selectedProtocol.testConditions.pressure && (
+                      <Typography variant="body2">
+                        <strong>Ciśnienie:</strong> {selectedProtocol.testConditions.pressure}
+                      </Typography>
+                    )}
+                  </Box>
+                  <Divider sx={{ my: 2 }} />
+                </>
+              )}
+
+              {/* Sprzęt */}
               {selectedProtocol.equipment?.length > 0 && (
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="subtitle2" gutterBottom>
-                    Sprzęt:
+                <>
+                  <Typography variant="h6" gutterBottom>
+                    Wyposażenie
                   </Typography>
-                  {selectedProtocol.equipment.map((item: any, index: number) => (
-                    <Typography key={index} variant="body2" sx={{ ml: 2 }}>
-                      • {item.name || item}
-                    </Typography>
-                  ))}
-                </Box>
+                  <Box sx={{ mb: 2 }}>
+                    {selectedProtocol.equipment.map((item: any, index: number) => (
+                      <Typography key={index} variant="body2" sx={{ mb: 1 }}>
+                        • <strong>{item.name || item}:</strong> {item.description || item.specifications || ''}
+                      </Typography>
+                    ))}
+                  </Box>
+                  <Divider sx={{ my: 2 }} />
+                </>
               )}
               
+              {/* Materiały */}
               {selectedProtocol.materials?.length > 0 && (
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="subtitle2" gutterBottom>
-                    Materiały:
+                <>
+                  <Typography variant="h6" gutterBottom>
+                    Materiały i odczynniki
                   </Typography>
-                  {selectedProtocol.materials.map((material: string, index: number) => (
-                    <Typography key={index} variant="body2" sx={{ ml: 2 }}>
-                      • {material}
-                    </Typography>
-                  ))}
-                </Box>
+                  <Box sx={{ mb: 2 }}>
+                    {selectedProtocol.materials.map((material: any, index: number) => (
+                      <Typography key={index} variant="body2" sx={{ mb: 1 }}>
+                        • <strong>{typeof material === 'string' ? material : material.name}:</strong> {
+                          typeof material === 'object' ? (material.grade || material.purity || '') : ''
+                        }
+                      </Typography>
+                    ))}
+                  </Box>
+                  <Divider sx={{ my: 2 }} />
+                </>
               )}
 
-              <Divider sx={{ my: 2 }} />
+              {/* Zasady bezpieczeństwa */}
+              {selectedProtocol.safetyGuidelines?.length > 0 && (
+                <>
+                  <Typography variant="h6" gutterBottom color="error">
+                    Zasady bezpieczeństwa
+                  </Typography>
+                  <Box sx={{ mb: 2 }}>
+                    {selectedProtocol.safetyGuidelines.map((guideline: any, index: number) => (
+                      <Typography key={index} variant="body2" sx={{ mb: 1 }} color="error.main">
+                        ⚠️ {typeof guideline === 'string' ? guideline : guideline.guideline}
+                      </Typography>
+                    ))}
+                  </Box>
+                  <Divider sx={{ my: 2 }} />
+                </>
+              )}
 
+              {/* Kroki procedury */}
               <Typography variant="h6" gutterBottom>
-                Kroki procedury
+                Procedura ({selectedProtocol.steps?.length || 0} kroków)
               </Typography>
               {selectedProtocol.steps?.length > 0 && (
-                selectedProtocol.steps.slice(0, 3).map((step: any, index: number) => (
-                  <Typography key={index} variant="body2" paragraph>
-                    <strong>{index + 1}.</strong> {step.title || step.description}
-                  </Typography>
-                ))
+                <Box sx={{ mb: 2 }}>
+                  {selectedProtocol.steps.map((step: any, index: number) => (
+                    <Box key={index} sx={{ mb: 2, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+                      <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
+                        Krok {index + 1}: {step.title}
+                      </Typography>
+                      <Typography variant="body2" paragraph>
+                        {step.description}
+                      </Typography>
+                      {step.expectedTime && (
+                        <Typography variant="caption" color="text.secondary">
+                          Czas: {step.expectedTime}
+                        </Typography>
+                      )}
+                      {step.safety?.length > 0 && (
+                        <Box sx={{ mt: 1, p: 1, bgcolor: 'warning.50', borderRadius: 1 }}>
+                          <Typography variant="caption" color="warning.main" fontWeight="bold">
+                            ⚠️ Bezpieczeństwo:
+                          </Typography>
+                          {step.safety.map((safety: string, safetyIndex: number) => (
+                            <Typography key={safetyIndex} variant="caption" display="block" color="warning.main">
+                              • {safety}
+                            </Typography>
+                          ))}
+                        </Box>
+                      )}
+                    </Box>
+                  ))}
+                </Box>
               )}
-              
-              {selectedProtocol.steps?.length > 3 && (
-                <Typography variant="body2" color="text.secondary" fontStyle="italic">
-                  ... i jeszcze {selectedProtocol.steps.length - 3} kroków
-                </Typography>
+
+              {/* Obliczenia */}
+              {selectedProtocol.calculations?.length > 0 && (
+                <>
+                  <Divider sx={{ my: 2 }} />
+                  <Typography variant="h6" gutterBottom>
+                    Obliczenia i wzory
+                  </Typography>
+                  <Box sx={{ mb: 2 }}>
+                    {selectedProtocol.calculations.map((calc: any, index: number) => (
+                      <Box key={index} sx={{ mb: 2, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+                        <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
+                          {calc.name}
+                        </Typography>
+                        <Typography variant="body2" paragraph>
+                          {calc.description}
+                        </Typography>
+                        <Typography variant="body2" fontFamily="monospace" sx={{ bgcolor: 'white', p: 1, borderRadius: 1 }}>
+                          {calc.formula}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                </>
+              )}
+
+              {/* Kryteria akceptacji */}
+              {selectedProtocol.acceptanceCriteria?.length > 0 && (
+                <>
+                  <Divider sx={{ my: 2 }} />
+                  <Typography variant="h6" gutterBottom color="success.main">
+                    Kryteria akceptacji
+                  </Typography>
+                  <Box sx={{ mb: 2 }}>
+                    {selectedProtocol.acceptanceCriteria.map((criterion: string, index: number) => (
+                      <Typography key={index} variant="body2" sx={{ mb: 1 }} color="success.main">
+                        ✓ {criterion}
+                      </Typography>
+                    ))}
+                  </Box>
+                </>
+              )}
+
+              {/* Typowe problemy */}
+              {selectedProtocol.commonIssues?.length > 0 && (
+                <>
+                  <Divider sx={{ my: 2 }} />
+                  <Typography variant="h6" gutterBottom color="warning.main">
+                    Typowe problemy i rozwiązania
+                  </Typography>
+                  <Box sx={{ mb: 2 }}>
+                    {selectedProtocol.commonIssues.map((issue: any, index: number) => (
+                      <Box key={index} sx={{ mb: 2, p: 2, bgcolor: 'warning.50', borderRadius: 1, border: '1px solid', borderColor: 'warning.200' }}>
+                        <Typography variant="subtitle2" fontWeight="bold" gutterBottom color="warning.main">
+                          Problem: {issue.issue}
+                        </Typography>
+                        <Typography variant="body2" color="warning.main">
+                          <strong>Rozwiązanie:</strong> {issue.solution}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                </>
+              )}
+
+              {/* Bibliografia */}
+              {selectedProtocol.references?.length > 0 && (
+                <>
+                  <Divider sx={{ my: 2 }} />
+                  <Typography variant="h6" gutterBottom>
+                    Bibliografia
+                  </Typography>
+                  <Box sx={{ mb: 2 }}>
+                    {selectedProtocol.references.map((reference: any, index: number) => (
+                      <Typography key={index} variant="body2" sx={{ mb: 1 }}>
+                        [{index + 1}] {typeof reference === 'string' ? reference : `${reference.title} - ${reference.authors} (${reference.year})`}
+                      </Typography>
+                    ))}
+                  </Box>
+                </>
               )}
             </Box>
           )}
