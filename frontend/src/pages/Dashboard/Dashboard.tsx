@@ -1,329 +1,276 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
+  Container,
+  Typography,
   Box,
+  Grid,
   Card,
   CardContent,
-  Grid,
-  Typography,
+  CardActions,
   Button,
-  CircularProgress,
   Chip,
+  Alert,
+  CircularProgress,
+  Fab,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
 } from '@mui/material';
-import {
-  Add as AddIcon,
-  Science as ScienceIcon,
-  Assignment as AssignmentIcon,
-  People as PeopleIcon,
-  TrendingUp as TrendingUpIcon,
-} from '@mui/icons-material';
+import { Add as AddIcon, Science as ScienceIcon, Assignment as AssignmentIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { researchSchemasApi, studiesApi } from '../../services/api';
-import { ResearchSchema, Study } from '../../types';
+import { useStudies, usePredefinedProtocols } from '../../hooks';
+import { Study, StudyStatus } from '../../types';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
-    schemasCount: 0,
-    studiesCount: 0,
-    activeStudiesCount: 0,
-    totalResponses: 0,
+  const [openCreateDialog, setOpenCreateDialog] = useState(false);
+  const [newStudyData, setNewStudyData] = useState({
+    name: '',
+    description: '',
+    protocolId: '',
+    category: ''
   });
-  const [recentSchemas, setRecentSchemas] = useState<ResearchSchema[]>([]);
-  const [recentStudies, setRecentStudies] = useState<Study[]>([]);
+
+  const {
+    studies,
+    isLoading: studiesLoading,
+    error: studiesError,
+    fetchStudies,
+    createStudy,
+    updateStudyStatus,
+    deleteStudy
+  } = useStudies();
+
+  const {
+    protocols: predefinedProtocols,
+    isLoading: protocolsLoading,
+    error: protocolsError,
+    fetchPredefinedProtocols
+  } = usePredefinedProtocols();
 
   useEffect(() => {
-    loadDashboardData();
-  }, []);
+    fetchStudies();
+    fetchPredefinedProtocols();
+  }, [fetchStudies, fetchPredefinedProtocols]);
 
-  const loadDashboardData = async () => {
-    try {
-      setLoading(true);
-      
-      // Pobierz schematy i badania
-      const [schemasResponse, studiesResponse] = await Promise.all([
-        researchSchemasApi.getAll(),
-        studiesApi.getAll(),
-      ]);
+  const handleCreateStudy = async () => {
+    if (!newStudyData.name || !newStudyData.protocolId) return;
 
-      if (schemasResponse.success && studiesResponse.success) {
-        const schemas = schemasResponse.data || [];
-        const studies = studiesResponse.data || [];
+    const success = await createStudy({
+      name: newStudyData.name,
+      description: newStudyData.description,
+      protocolId: newStudyData.protocolId,
+      category: newStudyData.category
+    });
 
-        // Oblicz statystyki
-        const activeStudies = studies.filter(study => study.status === 'ACTIVE');
-        const totalResponses = studies.reduce((sum, study) => sum + (study._count?.responses || 0), 0);
-
-        setStats({
-          schemasCount: schemas.length,
-          studiesCount: studies.length,
-          activeStudiesCount: activeStudies.length,
-          totalResponses,
-        });
-
-        // Ustaw ostatnie schematy i badania
-        setRecentSchemas(schemas.slice(0, 3));
-        setRecentStudies(studies.slice(0, 3));
-      }
-    } catch (error) {
-      console.error('Error loading dashboard data:', error);
-    } finally {
-      setLoading(false);
+    if (success) {
+      setOpenCreateDialog(false);
+      setNewStudyData({ name: '', description: '', protocolId: '', category: '' });
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const handleStatusChange = async (studyId: string, status: StudyStatus) => {
+    await updateStudyStatus(studyId, status);
+  };
+
+  const handleDeleteStudy = async (studyId: string) => {
+    if (window.confirm('Czy na pewno chcesz usunąć to badanie?')) {
+      await deleteStudy(studyId);
+    }
+  };
+
+  const getStatusColor = (status: StudyStatus) => {
     switch (status) {
-      case 'ACTIVE':
-        return 'success';
-      case 'COMPLETED':
-        return 'info';
-      case 'PAUSED':
-        return 'warning';
-      default:
-        return 'default';
+      case StudyStatus.ACTIVE: return 'success';
+      case StudyStatus.COMPLETED: return 'info';
+      case StudyStatus.PAUSED: return 'warning';
+      default: return 'default';
     }
   };
 
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'ACTIVE':
-        return 'Aktywne';
-      case 'COMPLETED':
-        return 'Zakończone';
-      case 'PAUSED':
-        return 'Wstrzymane';
-      case 'DRAFT':
-        return 'Projekt';
-      default:
-        return status;
-    }
-  };
-
-  if (loading) {
+  if (studiesLoading || protocolsLoading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
-      </Box>
+      <Container>
+        <Box display="flex" justifyContent="center" mt={4}>
+          <CircularProgress />
+        </Box>
+      </Container>
     );
   }
 
   return (
-    <Box>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Dashboard
-      </Typography>
-      
-      {/* Quick Stats */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Box display="flex" alignItems="center">
-                <ScienceIcon color="primary" sx={{ mr: 2, fontSize: 40 }} />
-                <Box>
-                  <Typography variant="h4" component="div">
-                    {stats.schemasCount}
-                  </Typography>
-                  <Typography color="text.secondary">
-                    Schematy badawcze
-                  </Typography>
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Box display="flex" alignItems="center">
-                <AssignmentIcon color="primary" sx={{ mr: 2, fontSize: 40 }} />
-                <Box>
-                  <Typography variant="h4" component="div">
-                    {stats.studiesCount}
-                  </Typography>
-                  <Typography color="text.secondary">
-                    Wszystkie badania
-                  </Typography>
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Box display="flex" alignItems="center">
-                <TrendingUpIcon color="success" sx={{ mr: 2, fontSize: 40 }} />
-                <Box>
-                  <Typography variant="h4" component="div">
-                    {stats.activeStudiesCount}
-                  </Typography>
-                  <Typography color="text.secondary">
-                    Aktywne badania
-                  </Typography>
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Box display="flex" alignItems="center">
-                <PeopleIcon color="info" sx={{ mr: 2, fontSize: 40 }} />
-                <Box>
-                  <Typography variant="h4" component="div">
-                    {stats.totalResponses}
-                  </Typography>
-                  <Typography color="text.secondary">
-                    Odpowiedzi
-                  </Typography>
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+        <Typography variant="h4" component="h1">
+          Panel Kontrolny
+        </Typography>
+        <Box>
+          <Button
+            variant="outlined"
+            startIcon={<ScienceIcon />}
+            onClick={() => navigate('/predefined-protocols')}
+            sx={{ mr: 2 }}
+          >
+            Protokoły
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => setOpenCreateDialog(true)}
+          >
+            Nowe Badanie
+          </Button>
+        </Box>
+      </Box>
 
-      {/* Quick Actions */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Szybkie akcje
-              </Typography>
-              <Box display="flex" gap={2} flexWrap="wrap">
+      {(studiesError || protocolsError) && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {studiesError || protocolsError}
+        </Alert>
+      )}
+
+      <Grid container spacing={3}>
+        {studies.length === 0 ? (
+          <Grid item xs={12}>
+            <Card>
+              <CardContent sx={{ textAlign: 'center', py: 6 }}>
+                <AssignmentIcon sx={{ fontSize: 64, color: 'grey.400', mb: 2 }} />
+                <Typography variant="h6" color="textSecondary">
+                  Brak badań
+                </Typography>
+                <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
+                  Utwórz swoje pierwsze badanie, aby rozpocząć pracę z protokołami
+                </Typography>
                 <Button
                   variant="contained"
                   startIcon={<AddIcon />}
-                  onClick={() => navigate('/schemas/create')}
+                  onClick={() => setOpenCreateDialog(true)}
                 >
-                  Nowy schemat badawczy
+                  Utwórz Badanie
                 </Button>
-                <Button
-                  variant="outlined"
-                  startIcon={<AddIcon />}
-                  onClick={() => navigate('/studies/create')}
-                >
-                  Nowe badanie
-                </Button>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-
-      {/* Recent Content */}
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Najnowsze schematy badawcze
-              </Typography>
-              {recentSchemas.length === 0 ? (
-                <Typography color="text.secondary">
-                  Brak schematów badawczych
-                </Typography>
-              ) : (
-                recentSchemas.map((schema) => (
-                  <Box
-                    key={schema.id}
-                    sx={{
-                      p: 2,
-                      mb: 1,
-                      border: 1,
-                      borderColor: 'divider',
-                      borderRadius: 1,
-                      cursor: 'pointer',
-                      '&:hover': {
-                        backgroundColor: 'action.hover',
-                      },
-                    }}
-                    onClick={() => navigate(`/schemas/${schema.id}/edit`)}
-                  >
-                    <Typography variant="subtitle1" fontWeight="medium">
-                      {schema.title}
+              </CardContent>
+            </Card>
+          </Grid>
+        ) : (
+          studies.map((study: Study) => (
+            <Grid item xs={12} md={6} lg={4} key={study.id}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" noWrap title={study.name}>
+                    {study.name}
+                  </Typography>
+                  {study.description && (
+                    <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>
+                      {study.description}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {schema.questions.length} pytań
-                    </Typography>
+                  )}
+                  <Box display="flex" justifyContent="space-between" alignItems="center" mt={2}>
+                    <Chip
+                      label={study.status}
+                      color={getStatusColor(study.status)}
+                      size="small"
+                    />
+                    {study.category && (
+                      <Chip label={study.category} variant="outlined" size="small" />
+                    )}
                   </Box>
-                ))
-              )}
-              <Button
-                size="small"
-                onClick={() => navigate('/schemas')}
-                sx={{ mt: 1 }}
-              >
-                Zobacz wszystkie
-              </Button>
-            </CardContent>
-          </Card>
-        </Grid>
-        
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Najnowsze badania
-              </Typography>
-              {recentStudies.length === 0 ? (
-                <Typography color="text.secondary">
-                  Brak badań
-                </Typography>
-              ) : (
-                recentStudies.map((study) => (
-                  <Box
-                    key={study.id}
-                    sx={{
-                      p: 2,
-                      mb: 1,
-                      border: 1,
-                      borderColor: 'divider',
-                      borderRadius: 1,
-                      cursor: 'pointer',
-                      '&:hover': {
-                        backgroundColor: 'action.hover',
-                      },
-                    }}
+                  <Typography variant="caption" color="textSecondary" sx={{ mt: 1, display: 'block' }}>
+                    Utworzono: {new Date(study.createdAt).toLocaleDateString()}
+                  </Typography>
+                </CardContent>
+                <CardActions>
+                  <Button
+                    size="small"
                     onClick={() => navigate(`/studies/${study.id}`)}
                   >
-                    <Box display="flex" justifyContent="space-between" alignItems="start">
-                      <Box>
-                        <Typography variant="subtitle1" fontWeight="medium">
-                          {study.title}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {study._count?.responses || 0} odpowiedzi
-                        </Typography>
-                      </Box>
-                      <Chip
-                        label={getStatusLabel(study.status)}
-                        color={getStatusColor(study.status) as any}
-                        size="small"
-                      />
-                    </Box>
-                  </Box>
-                ))
-              )}
-              <Button
-                size="small"
-                onClick={() => navigate('/studies')}
-                sx={{ mt: 1 }}
-              >
-                Zobacz wszystkie
-              </Button>
-            </CardContent>
-          </Card>
-        </Grid>
+                    Szczegóły
+                  </Button>
+                  <Button
+                    size="small"
+                    onClick={() => navigate(`/studies/${study.id}/edit`)}
+                  >
+                    Edytuj
+                  </Button>
+                  <Button
+                    size="small"
+                    color="error"
+                    onClick={() => handleDeleteStudy(study.id)}
+                  >
+                    Usuń
+                  </Button>
+                </CardActions>
+              </Card>
+            </Grid>
+          ))
+        )}
       </Grid>
-    </Box>
+
+      {/* Create Study Dialog */}
+      <Dialog open={openCreateDialog} onClose={() => setOpenCreateDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Utwórz Nowe Badanie</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Nazwa badania"
+            fullWidth
+            variant="outlined"
+            value={newStudyData.name}
+            onChange={(e) => setNewStudyData({ ...newStudyData, name: e.target.value })}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            margin="dense"
+            label="Opis"
+            fullWidth
+            multiline
+            rows={3}
+            variant="outlined"
+            value={newStudyData.description}
+            onChange={(e) => setNewStudyData({ ...newStudyData, description: e.target.value })}
+            sx={{ mb: 2 }}
+          />
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>Protokół</InputLabel>
+            <Select
+              value={newStudyData.protocolId}
+              label="Protokół"
+              onChange={(e) => setNewStudyData({ ...newStudyData, protocolId: e.target.value })}
+            >
+              {predefinedProtocols.map((protocol) => (
+                <MenuItem key={protocol.id} value={protocol.id}>
+                  {protocol.title} ({protocol.standard})
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <TextField
+            margin="dense"
+            label="Kategoria"
+            fullWidth
+            variant="outlined"
+            value={newStudyData.category}
+            onChange={(e) => setNewStudyData({ ...newStudyData, category: e.target.value })}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenCreateDialog(false)}>Anuluj</Button>
+          <Button
+            onClick={handleCreateStudy}
+            variant="contained"
+            disabled={!newStudyData.name || !newStudyData.protocolId}
+          >
+            Utwórz
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
   );
 };
 

@@ -49,14 +49,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       path: '/',
     },
     {
-      text: 'Schematy badawcze',
+      text: 'Protokoły badawcze',
       icon: <ScienceIcon />,
       path: '/schemas',
     },
     {
-      text: 'Schematy ISO/ASTM',
+      text: 'Protokoły ISO/ASTM',
       icon: <LibraryBooksIcon />,
-      path: '/schemas/predefined',
+      path: '/protocols/predefined',
     },
     {
       text: 'Badania',

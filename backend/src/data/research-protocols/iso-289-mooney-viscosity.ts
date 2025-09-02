@@ -1,282 +1,251 @@
-/**
- * ISO 289-1:2015 - Rubber, unvulcanized — Determinations using a shearing-disc viscometer
- * Protokół badania lepkości Mooneya nieutwardzonych kauczuków
- */
-
-export const ISO289Protocol = {
-  id: 'iso-289-mooney-viscosity',
-  title: 'ISO 289 - Lepkość Mooneya nieutwardzonych kauczuków',
-  version: '2015',
-  category: 'rheology',
-  description: 'Oznaczanie lepkości Mooneya i czasu podparzelenia nieutwardzonych kauczuków za pomocą wiskozymetru z tarczą ścinającą',
+export const iso289Protocol = {
+  id: 'iso-289',
+  title: 'ISO 289 - Lepkość Mooney\'a Gumy',
+  description: 'Kompleksowy protokół do określania lepkości Mooney\'a surowej gumy i mieszanek gumowych przy użyciu wiskozymetru rotacyjnego.',
+  category: 'rheological',
+  estimatedDuration: '20-30 minut na próbkę',
+  difficulty: 'intermediate',
   
-  equipment: {
-    required: [
-      'Wiskozymetr Mooneya zgodny z ISO 289',
-      'Tarcza ścinająca duża (L) lub mała (S)',
-      'Waga analityczna (dokładność ±0.01 g)',
-      'Kalendrarz lub wałki do przygotowania próbek',
-      'Narzędzia do cięcia próbek kauczuku',
-      'Sekundomierz cyfrowy'
-    ],
-    optional: [
-      'Mieszalnik laboratoryjny',
-      'Forma do standardowych próbek',
-      'Mikrometr do pomiaru grubości',
-      'Nóż lub gilotyna do cięcia'
-    ]
+  overview: {
+    purpose: 'Określenie lepkości Mooney\'a jako miary konsystencji i przetwarzalności surowej gumy i mieszanek gumowych.',
+    scope: 'Stosowane do surowej gumy naturalnej i syntetycznej oraz mieszanek gumowych nieutwardzonych.',
+    principles: 'Lepkość jest mierzona jako moment obrotowy potrzebny do obrócenia standardowego rotora w próbce gumy w określonej temperaturze.',
+    standards: ['ISO 289-1:2014', 'ASTM D1646', 'DIN 53523']
   },
 
+  equipment: [
+    { name: 'Wiskozymetr Mooney\'a', specification: 'Zgodny z ISO 289, kontrola temperatury ±0.5°C' },
+    { name: 'Rotor Standardowy', specification: 'Typ L (średnica 38.1mm) lub S (średnica 30.5mm)' },
+    { name: 'Komora Testowa', specification: 'Średnica 50.8mm, wysokość 24.6mm' },
+    { name: 'System Grzejny', specification: 'Temperatura 100±0.5°C lub 125±0.5°C' },
+    { name: 'Rejestrator Momentu', specification: 'Zakres 0-200 jednostek Mooney\'a' },
+    { name: 'Waga', specification: 'Dokładność ±0.1g' },
+    { name: 'Nóż do Cięcia', specification: 'Ostry nóż do przygotowania próbek' },
+    { name: 'Kalander/Wałki', specification: 'Do przygotowania arkuszy gumy' }
+  ],
+
+  materials: [
+    'Próbka gumy (około 25g)',
+    'Folia separacyjna (polyester lub celofan)',
+    'Środek antyadhezyjny (talk, kreda)',
+    'Rękawice nitrylowe',
+    'Narzędzia do manipulacji próbką'
+  ],
+
+  safetyGuidelines: [
+    'Noś rękawice podczas pracy z gorącymi powierzchniami',
+    'Uważaj na ruchome części rotora',
+    'Używaj okularów ochronnych podczas cięcia próbek',
+    'Upewnij się o właściwej wentylacji pomieszczenia',
+    'Sprawdź zabezpieczenia przed przeciążeniem'
+  ],
+
   testConditions: {
-    temperature: '100 ± 0.5°C',
-    preheatingTime: '60 ± 2 sekundy',
-    testTime: '240 ± 2 sekundy (4 minuty)',
-    rotorSpeed: '2 ± 0.02 obr/min',
-    discTypes: [
-      { type: 'L', diameter: '38.10 ± 0.05 mm', thickness: '5.54 ± 0.02 mm' },
-      { type: 'S', diameter: '30.48 ± 0.05 mm', thickness: '5.54 ± 0.02 mm' }
-    ]
+    temperature: '100±0.5°C (standardowa) lub 125±0.5°C (dla niektórych materiałów)',
+    preheating: '1 minuta przed rozpoczęciem rotacji',
+    testDuration: '4 minuty rotacji po preheating',
+    rotorSpeed: '2±0.02 rpm',
+    environment: 'Standardowa atmosfera laboratoryjna'
   },
 
   steps: [
     {
-      id: 'sample-preparation',
-      title: 'Przygotowanie próbki kauczuku',
-      duration: '30-45 minut',
+      id: 'prep-1',
+      title: 'Przygotowanie Sprzętu',
+      description: 'Przygotuj wiskozymetr i sprawdź kalibrację',
+      duration: '10-15 minut',
       instructions: [
-        '1. **Pobór próbki**: Pobierz reprezentatywną próbkę nieutwardzonego kauczuku (50-60 g)',
-        '2. **Kondycjonowanie**: Próbka powinna być w temperaturze pokojowej (23 ± 2°C)',
-        '3. **Kalendrowanie**: Przepuść próbkę przez kalendrarz:',
-        '   - Szerokość szczeliny: 1.5-2.0 mm',
-        '   - 6-8 przepustów z rotacją 90° między przepustami',
-        '   - Końcowa grubość: 5.0-6.0 mm',
-        '4. **Cięcie**: Wytnij próbki o wymiarach:',
-        '   - Dla rotora L: średnica 35 mm (4 krążki)',
-        '   - Dla rotora S: średnica 28 mm (4 krążki)',
-        '5. **Kontrola**: Sprawdź czy próbki nie zawierają pęcherzy powietrza'
-      ],
-      safety: [
-        'Używaj rękawic podczas pracy z kauczukiem surowym',
-        'Uważaj na ostre krawędzie kalendarza',
-        'Zapewnij odpowiednią wentylację (możliwe opary z kauczuku)'
+        'Sprawdź czystość komory testowej i rotora',
+        'Ustaw temperaturę testową (100°C lub 125°C)',
+        'Sprawdź kalibrację momentu obrotowego',
+        'Sprawdź prędkość rotacji rotora (2 rpm)',
+        'Upewnij się że system jest stabilny termicznie',
+        'Przeprowadź test kalibracyjny z materiałem referencyjnym'
       ],
       tips: [
-        'Próbki powinny mieć jednolitą grubość',
-        'Unikaj nadmiernego nagrzewania podczas kalendrowania',
-        'Przechowuj próbki w chłodnym miejscu przed testem'
+        'Komora musi być całkowicie czysta - resztki gumy wpływają na wyniki',
+        'Temperatura powinna być stabilna przez co najmniej 30 minut',
+        'Kalibracja powinna być sprawdzana codziennie'
+      ],
+      safety: [
+        'Uważaj na gorące powierzchnie komory',
+        'Sprawdź funkcję awaryjnego zatrzymania',
+        'Upewnij się że osłony są na miejscu'
       ]
     },
     {
-      id: 'apparatus-preparation',
-      title: 'Przygotowanie wiskozymetru',
-      duration: '20-30 minut',
+      id: 'prep-2',
+      title: 'Przygotowanie Próbki',
+      description: 'Przygotuj próbkę gumy do testu',
+      duration: '10-15 minut',
       instructions: [
-        '1. **Czyszczenie**: Dokładnie wyczyść komory wiskozymetru i rotor',
-        '2. **Montaż rotora**: Zamontuj odpowiednią tarczę (L lub S)',
-        '3. **Kalibracja**: Sprawdź kalibrację temperatury i prędkości obrotowej',
-        '4. **Nagrzewanie**: Nagrzej komory do 100 ± 0.5°C',
-        '5. **Stabilizacja**: Poczekaj na stabilizację temperatury (minimum 30 min)',
-        '6. **Test zerowy**: Przeprowadź test zerowy bez próbki dla sprawdzenia'
-      ],
-      safety: [
-        'Nie dotykaj gorących powierzchni komór',
-        'Upewnij się że rotor jest prawidłowo zamocowany',
-        'Sprawdź czy wszystkie osłony są na miejscu'
+        'Odważ około 25g próbki gumy',
+        'Przemieszaj próbkę aby zapewnić jednorodność',
+        'Przygotuj arkusz o grubości 5-6mm na kalandrze',
+        'Wytnie koła o średnicy nieco większej od komory',
+        'Przygotuj dwie warstwy próbki',
+        'Usuń pęcherze powietrza z próbki'
       ],
       tips: [
-        'Temperatura powinna być stabilna w całej komorze',
-        'Rotor powinien obracać się płynnie bez wibracji',
-        'Sprawdź czy komory domykają się szczelnie'
+        'Próbka musi być reprezentatywna dla całej partii',
+        'Unikaj przegrzania podczas przygotowania',
+        'Grubość próbki powinna być jednolita'
+      ],
+      safety: [
+        'Noś rękawice podczas pracy z kalandrem',
+        'Uważaj na gorące wałki kalandra',
+        'Używaj narzędzi do manipulacji próbką'
       ]
     },
     {
-      id: 'sample-loading',
-      title: 'Ładowanie próbki',
+      id: 'setup-1',
+      title: 'Ładowanie Próbki',
+      description: 'Załaduj próbkę do komory wiskozymetru',
       duration: '5 minut',
       instructions: [
-        '1. **Otwarcie komór**: Otwórz komory wiskozymetru',
-        '2. **Umieszczenie próbek**: Umieść po 2 krążki w każdej komorze:',
-        '   - Pierwszy krążek na dnie komory',
-        '   - Drugi krążek na rotorze',
-        '   - Próbki powinny pokrywać całą powierzchnię rotora',
-        '3. **Pozycjonowanie**: Upewnij się że próbki są wyśrodkowane',
-        '4. **Zamknięcie**: Delikatnie zamknij komory unikając uwięzienia powietrza'
-      ],
-      safety: [
-        'Uważaj na gorące powierzchnie komór',
-        'Nie dotykaj rotora podczas jego obracania',
-        'Nie przyspieszaj zamykania komór'
+        'Otwórz komorę wiskozymetru',
+        'Umieść dolną warstwę próbki w komorze',
+        'Wstaw rotor w środek próbki',
+        'Umieść górną warstwę próbki',
+        'Zamknij komorę i dociśnij zgodnie ze specyfikacją',
+        'Sprawdź czy próbka wypełnia całkowicie komorę'
       ],
       tips: [
-        'Próbki powinny być płaskie i bez zagięć',
-        'Unikaj nadmiaru materiału wypierającego się z komór',
-        'Sprawdź czy rotor może się swobodnie obracać'
+        'Próbka powinna całkowicie otaczać rotor',
+        'Unikaj pęcherzy powietrza w próbce',
+        'Docisk powinien być równomierny'
+      ],
+      safety: [
+        'Nie dotykaj gorącej komory bez rękawic',
+        'Uważaj na pozycję rotora podczas zamykania',
+        'Sprawdź czy komora jest właściwie zamknięta'
       ]
     },
     {
-      id: 'preheating-phase',
-      title: 'Faza wygrzewania',
-      duration: '1 minuta',
+      id: 'test-1',
+      title: 'Wykonanie Testu',
+      description: 'Przeprowadź pomiar lepkości Mooney\'a',
+      duration: '5-6 minut',
       instructions: [
-        '1. **Start timera**: Uruchom timer na 60 ± 2 sekundy',
-        '2. **Pozycja rotora**: Rotor pozostaje nieruchomy',
-        '3. **Obserwacja**: Obserwuj czy temperatura pozostaje stabilna',
-        '4. **Przygotowanie**: Przygotuj się do rozpoczęcia rotacji',
-        '5. **Sprawdzenie**: Upewnij się że komory są szczelnie zamknięte'
-      ],
-      safety: [
-        'Nie otwieraj komór podczas wygrzewania',
-        'Monitoruj temperaturę na wyświetlaczu',
-        'Zachowaj bezpieczną odległość od aparatu'
+        'Uruchom preheating na 1 minutę',
+        'Po preheating rozpocznij rotację rotora',
+        'Zapisuj wartości momentu co 30 sekund',
+        'Kontynuuj test przez 4 minuty',
+        'Odczytaj wartość lepkości po 1 i 4 minutach',
+        'Zapisz wszystkie odczyty w protokole'
       ],
       tips: [
-        'Materiał powinien się rozgrzewać równomiernie',
-        'Możliwe jest lekkie wyparowanie wilgoci z próbki',
-        'Przygotuj się do natychmiastowego startu rotacji'
+        'Moment obrotowy może być niestabilny na początku',
+        'Wartość po 4 minutach jest wartością standardową',
+        'Obserwuj czy są znaczne fluktuacje momentu'
+      ],
+      safety: [
+        'Nie otwieraj komory podczas rotacji',
+        'Sprawdź czy rotor obraca się swobodnie',
+        'Obserwuj przeciążenia momentu'
       ]
     },
     {
-      id: 'viscosity-measurement',
-      title: 'Pomiar lepkości',
-      duration: '4 minuty',
+      id: 'calc-1',
+      title: 'Odczyt i Obliczenia',
+      description: 'Odczytaj wyniki i wykonaj obliczenia',
+      duration: '5 minut',
       instructions: [
-        '1. **Start rotacji**: Po 60 sekundach uruchom rotację rotora (2 obr/min)',
-        '2. **Rozpoczęcie pomiaru**: Rozpocznij pomiar momentu obrotowego',
-        '3. **Monitoring**: Obserwuj wzrost lepkości na wykresie',
-        '4. **Odczyt**: Zapisuj wartości co 30 sekund przez 4 minuty',
-        '5. **Końcowy odczyt**: Odczytaj wartość ML(1+4) po 4 minutach testu'
-      ],
-      safety: [
-        'Nie zatrzymuj rotacji przed końcem pomiaru',
-        'Monitoruj czy aparat pracuje normalnie',
-        'Nie otwieraj komór podczas pomiaru'
+        'Odczytaj wartość lepkości po 4 minutach rotacji',
+        'Sprawdź trend wartości podczas testu',
+        'Oblicz różnicę między wartością końcową a początkową',
+        'Porównaj z wartościami referencyjnymi',
+        'Sprawdź czy wynik mieści się w akceptowalnym zakresie'
       ],
       tips: [
-        'Krzywa powinna być płynna bez skoków',
-        'Normalne wartości: 20-150 jednostek Mooneya',
-        'Notuj wszelkie nieprawidłowości w zachowaniu aparatu'
-      ]
-    },
-    {
-      id: 'scorch-test',
-      title: 'Test czasu podparzelenia (opcjonalny)',
-      duration: '15-45 minut',
-      instructions: [
-        '1. **Kontynuacja**: Po pomiarze ML(1+4) kontynuuj test',
-        '2. **Monitoring wzrostu**: Obserwuj wzrost lepkości w czasie',
-        '3. **Punkt początkowy**: Zanotuj moment rozpoczęcia wzrostu (ts1)',
-        '4. **Punkt końcowy**: Zanotuj wzrost o 5 jednostek (ts2)',
-        '5. **Obliczenia**: Oblicz czas podparzelenia: Δt = ts2 - ts1'
+        'Wartość powinna być stabilna pod koniec testu',
+        'Duże fluktuacje mogą wskazywać na problemy',
+        'Zapisz temperaturę i czas testu'
       ],
       safety: [
-        'Test może trwać długo - zachowaj cierpliwość',
-        'Monitoruj temperaturę przez cały czas',
-        'Przygotuj się na możliwy wzrost temperatury próbki'
-      ],
-      tips: [
-        'Niektóre kauczuki mogą nie wykazywać podparzelenia',
-        'Czas podparzelenia zależy od składu mieszanki',
-        'Zapisuj pełną krzywą dla analizy'
-      ]
-    },
-    {
-      id: 'calculation-reporting',
-      title: 'Obliczenia i raportowanie',
-      duration: '15 minut',
-      instructions: [
-        '1. **Lepkość Mooneya**: Odczytaj wartość ML(1+4) w jednostkach Mooneya',
-        '2. **Krzywa lepkości**: Przeanalizuj kształt krzywej lepkości',
-        '3. **Czas podparzelenia**: Jeśli wykonywano - oblicz ts1, ts2 i Δt',
-        '4. **Walidacja**: Sprawdź czy wyniki są w oczekiwanym zakresie',
-        '5. **Protokół**: Wypełnij kompletny protokół zawierający:',
-        '   - Identyfikację próbki',
-        '   - Typ rotora (L/S)',
-        '   - Temperaturę testu',
-        '   - Wartość ML(1+4)',
-        '   - Krzywą lepkości',
-        '   - Czas podparzelenia (jeśli mierzono)',
-        '6. **Format wyniku**: ML(1+4) przy 100°C, rotor L/S'
-      ],
-      safety: [
-        'Pozwól aparatowi ostygnąć przed czyszczeniem',
-        'Usuń gorące próbki odpowiednimi narzędziami'
-      ],
-      tips: [
-        'Porównaj wyniki z poprzednimi pomiarami tej samej mieszanki',
-        'Zachowaj fragmenty próbki do ewentualnej weryfikacji',
-        'Zapisz wszystkie parametry środowiskowe podczas testu'
+        'Pozwól komorze ostygnąć przed otwarciem',
+        'Używaj narzędzi do usunięcia próbki'
       ]
     }
   ],
 
   calculations: {
-    mooney_viscosity: {
-      formula: 'ML(1+4) = odczyt po 4 minutach rotacji',
-      units: 'Jednostki Mooneya (MU)',
-      description: 'Lepkość Mooneya po 1 minucie wygrzewania i 4 minutach rotacji'
-    },
-    scorch_time: {
-      formula: 'Δt = ts2 - ts1',
-      units: 'minuty',
-      description: 'Czas wzrostu lepkości o 5 jednostek Mooneya'
+    mooney: 'ML(1+4) = wartość momentu po 4 minutach rotacji [jednostki Mooney\'a]',
+    scorch: 't5 = czas do wzrostu o 5 jednostek powyżej minimum [min]',
+    where: {
+      'ML': 'Lepkość Mooney\'a z rotorem dużym (L)',
+      '1+4': '1 minuta preheating + 4 minuty test',
+      't5': 'Czas scorchu (dla mieszanek)'
     }
   },
 
-  acceptance_criteria: {
-    temperature_tolerance: '± 0.5°C',
-    time_tolerance: '± 2 sekundy',
-    rotation_speed: '2 ± 0.02 obr/min',
-    repeatability: 'Różnica między pomiarami ≤ 3 jednostki Mooneya'
+  acceptanceCriteria: {
+    repeatability: 'Różnica między pomiarami < 3 jednostki Mooney\'a',
+    reproducibility: 'Różnica między laboratoriami < 5 jednostek',
+    minimumSamples: 'Minimum 2 pomiary na próbkę',
+    temperatureStability: 'Temperatura stabilna ±0.5°C podczas testu'
   },
 
-  typical_values: [
-    { material: 'SBR', range: '45-65 MU', comment: 'Kauczuk styreno-butadienowy' },
-    { material: 'NBR', range: '35-70 MU', comment: 'Kauczuk nitrylowy' },
-    { material: 'EPDM', range: '25-90 MU', comment: 'Kauczuk etylenowo-propylenowy' },
-    { material: 'BR', range: '35-55 MU', comment: 'Kauczuk butadienowy' },
-    { material: 'NR', range: '60-85 MU', comment: 'Kauczuk naturalny' }
-  ],
-
-  common_issues: [
+  commonIssues: [
     {
-      problem: 'Nieregularna krzywa lepkości',
-      causes: ['Pęcherzyki powietrza w próbce', 'Niejednorodny materiał', 'Niestabilna temperatura'],
-      solutions: ['Lepsze kalendrowanie próbki', 'Dokładniejsze mieszanie', 'Sprawdzenie kalibracji temperatury']
+      problem: 'Niestabilne odczyty momentu',
+      causes: [
+        'Pęcherze powietrza w próbce',
+        'Nierównomierna temperatura',
+        'Zużyty rotor lub komora',
+        'Nieodpowiednia konsystencja próbki'
+      ],
+      solutions: [
+        'Lepiej przygotuj próbkę - usuń powietrze',
+        'Sprawdź kalibrację temperatury',
+        'Sprawdź stan rotora i komory',
+        'Sprawdź jednorodność materiału'
+      ]
     },
     {
-      problem: 'Za wysokie wartości lepkości',
-      causes: ['Przedwulkanizacja materiału', 'Za gruba próbka', 'Za wysoka temperatura'],
-      solutions: ['Sprawdzenie świeżości materiału', 'Korekta grubości próbki', 'Kalibracja temperatury']
+      problem: 'Wartości poza zakresem',
+      causes: [
+        'Niewłaściwa temperatura testu',
+        'Zanieczyszczona próbka',
+        'Błędna kalibracja sprzętu',
+        'Nieodpowiedni rotor'
+      ],
+      solutions: [
+        'Sprawdź i skoryguj temperaturę',
+        'Użyj czystej próbki',
+        'Przeprowadź kalibrację sprzętu',
+        'Sprawdź typ i stan rotora'
+      ]
     },
     {
-      problem: 'Niestabilny pomiar',
-      causes: ['Luzy w mechanizmie', 'Zanieczyszczenia w komorach', 'Błąd kalibracji'],
-      solutions: ['Serwis aparatu', 'Dokładne czyszczenie', 'Ponowna kalibracja']
-    },
-    {
-      problem: 'Brak podparzelenia',
-      causes: ['Brak acceleratorów', 'Za niska temperatura', 'Materiał bez siarki'],
-      solutions: ['Sprawdzenie składu mieszanki', 'Korekta temperatury', 'Analiza receptury']
+      problem: 'Przywieranie próbki do komory',
+      causes: [
+        'Za wysoka temperatura',
+        'Brak środka antyadhezyjnego',
+        'Przedłużenie gumy podczas testu',
+        'Niewłaściwy materiał próbki'
+      ],
+      solutions: [
+        'Obniż temperaturę testu',
+        'Użyj odpowiedniego środka antyadhezyjnego',
+        'Sprawdź właściwości próbki',
+        'Skróć czas testu'
+      ]
     }
   ],
 
-  maintenance: {
-    daily: [
-      'Czyszczenie komór i rotora',
-      'Sprawdzenie temperatury',
-      'Kontrola szczelności komór'
-    ],
-    weekly: [
-      'Kalibracja temperatury',
-      'Sprawdzenie prędkości rotacji',
-      'Kontrola stanu rotora'
-    ],
-    monthly: [
-      'Pełna kalibracja aparatu',
-      'Wymiana uszczelek jeśli potrzeba',
-      'Test z materiałem referencyjnym'
-    ]
-  }
+  typicalValues: {
+    'Guma naturalna (NR)': '60-90 ML(1+4) przy 100°C',
+    'SBR': '45-70 ML(1+4) przy 100°C',
+    'NBR': '40-80 ML(1+4) przy 100°C',
+    'EPDM': '40-70 ML(1+4) przy 125°C',
+    'Neopren': '40-90 ML(1+4) przy 100°C',
+    'Mieszanki gumowe': '30-120 ML(1+4) zależnie od składu'
+  },
+
+  references: [
+    'ISO 289-1:2014 - Rubber, unvulcanized - Determinations using a shearing-disc viscometer - Part 1: Determination of Mooney viscosity',
+    'ASTM D1646-17 - Standard Test Methods for Rubber-Viscosity, Stress Relaxation, and Pre-Vulcanization Characteristics (Mooney Viscometer)',
+    'DIN 53523-3 - Testing of rubber - Viscosity measurement using the Mooney viscometer'
+  ]
 };
-
-export default ISO289Protocol;

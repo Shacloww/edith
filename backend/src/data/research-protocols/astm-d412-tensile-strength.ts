@@ -1,291 +1,251 @@
-/**
- * ASTM D412-16 - Standard Test Methods for Vulcanized Rubber and Thermoplastic Elastomers—Tension
- * Protokół badania wytrzymałości na rozciąganie wulkanizowanych kauczuków
- */
-
-export const ASTMD412Protocol = {
-  id: 'astm-d412-tensile-strength',
-  title: 'ASTM D412 - Wytrzymałość na rozciąganie kauczuków',
-  version: '2016',
-  category: 'mechanical_properties',
-  description: 'Oznaczanie właściwości wytrzymałościowych wulkanizowanych kauczuków i elastomerów termoplastycznych przy rozciąganiu',
+export const astmD412Protocol = {
+  id: 'astm-d412',
+  title: 'ASTM D412 - Właściwości Rozciągania Gumy',
+  description: 'Kompleksowy protokół do określania właściwości rozciągania wulkanizowanych elastomerów i termoplastycznych elastomerów.',
+  category: 'mechanical',
+  estimatedDuration: '30-45 minut na próbkę',
+  difficulty: 'intermediate',
   
-  equipment: {
-    required: [
-      'Uniwersalna maszyna wytrzymałościowa z odpowiednią siłą',
-      'Uchwyty do próbek kauczukowych (typu pneumatycznego lub mechanicznego)',
-      'Ekstensometr lub system pomiaru wydłużenia',
-      'Wykrojniki do próbek (typ C, typ 1, typ 2)',
-      'Suwmiarka cyfrowa (dokładność ±0.01 mm)',
-      'Mikrometr (dokładność ±0.001 mm)'
-    ],
-    optional: [
-      'Kamera do pomiaru odkształceń (DIC)',
-      'Komora klimatyczna do testów w kontrolowanych warunkach',
-      'System automatycznego pomiaru grubości',
-      'Oprogramowanie do analizy krzywej naprężenie-odkształcenie'
-    ]
+  overview: {
+    purpose: 'Określenie wytrzymałości na rozciąganie, wydłużenia przy zerwaniu i modułów sprężystości materiałów gumowych.',
+    scope: 'Stosowane do wulkanizowanej gumy, termoplastycznych elastomerów i podobnych materiałów elastycznych.',
+    principles: 'Próbki są rozciągane ze stałą prędkością do zniszczenia podczas pomiaru siły i wydłużenia.',
+    standards: ['ASTM D412-16', 'ISO 37', 'DIN 53504']
   },
 
+  equipment: [
+    { name: 'Uniwersalna Maszyna Wytrzymałościowa', specification: 'Zdolna do utrzymania stałej prędkości rozciągania' },
+    { name: 'Czujnik Siły', specification: 'Dokładność ±1% z możliwością pomiaru do zerwania' },
+    { name: 'Uchwyty Próbek', specification: 'Zapobiegające poślizgowi, odpowiednie dla elastomerów' },
+    { name: 'Ekstensometr', specification: 'Bezdotykowy lub z małą siłą docisku dla elastomerów' },
+    { name: 'Szablon do Cięcia', specification: 'Typ C (pierścień), D (łzka) lub inne zgodnie z ASTM' },
+    { name: 'Nóż/Wykrawarka', specification: 'Ostre ostrze do precyzyjnego cięcia próbek' },
+    { name: 'Suwmiarka', specification: 'Dokładność ±0.025mm do pomiaru grubości' },
+    { name: 'Komora Klimatyczna', specification: 'Kontrola temperatury ±2°C (opcjonalna)' }
+  ],
+
+  materials: [
+    'Próbki gumy o grubości 2±0.2mm',
+    'Szablon do wykrawania (typ C, D lub inne)',
+    'Proszek talku (środek antyadhezyjny)',
+    'Znaczniki do oznaczania długości pomiarowej',
+    'Rękawice nitrylowe'
+  ],
+
+  safetyGuidelines: [
+    'Noś okulary ochronne podczas testowania',
+    'Uważaj na zniszczenie próbki - może nastąpić gwałtownie',
+    'Sprawdź mocowanie próbki przed rozpoczęciem testu',
+    'Upewnij się że procedury awaryjnego zatrzymania są znane',
+    'Używaj odpowiednich narzędzi do manipulacji próbkami'
+  ],
+
   testConditions: {
-    temperature: '23 ± 2°C (standardowo)',
-    humidity: '50 ± 5% RH',
-    testSpeed: [
-      '500 ± 50 mm/min (standardowo)',
-      '50 ± 5 mm/min (dla materiałów twardych)',
-      '200 ± 20 mm/min (alternatywnie)'
-    ],
-    sampleTypes: [
-      { type: 'C', width: '6.00 ± 0.05 mm', length: '25 mm', radius: '8.5 mm' },
-      { type: '1', width: '6.00 ± 0.05 mm', length: '33 mm', radius: '14 mm' },
-      { type: '2', width: '6.00 ± 0.05 mm', length: '25 mm', radius: '8.5 mm' }
-    ]
+    temperature: '23±2°C (standardowa) lub inna zgodnie z wymaganiami',
+    humidity: '50±5% RH',
+    conditioning: 'Minimum 3 godziny w standardowych warunkach',
+    testSpeed: '500±50 mm/min (standardowa) lub inna określona',
+    preload: 'Minimalne naprężenie do wyrównania próbki'
   },
 
   steps: [
     {
-      id: 'sample-preparation',
-      title: 'Przygotowanie próbek',
-      duration: '45-60 minut',
-      instructions: [
-        '1. **Wybór materiału**: Pobierz reprezentatywną próbkę wulkanizowanego kauczuku',
-        '2. **Grubość płyty**: Użyj płyt o grubości 2.0 ± 0.2 mm (standardowo)',
-        '3. **Wykrawanie**: Wykrój próbki odpowiednim wykrojnikiem:',
-        '   - Typ C: do materiałów o twardości <50 Shore A',
-        '   - Typ 1: do materiałów twardszych',
-        '   - Typ 2: dla porównań międzynarodowych',
-        '4. **Kontrola wymiarów**: Zmierz wymiary każdej próbki:',
-        '   - Szerokość w 3 miejscach części roboczej',
-        '   - Grubość w 5 miejscach',
-        '   - Długość części roboczej',
-        '5. **Oznaczenie**: Oznacz próbki numerami (minimum 5 próbek)',
-        '6. **Kondycjonowanie**: Kondycjonuj w 23±2°C przez minimum 3 godziny'
-      ],
-      safety: [
-        'Używaj ostrożnie wykrojników - bardzo ostre krawędzie',
-        'Noś okulary ochronne podczas wykrawania',
-        'Uważaj na odkształcenia próbki podczas pomiaru'
-      ],
-      tips: [
-        'Wykrawaj próbki jednym zdecydowanym ruchem',
-        'Unikaj rozciągania próbki podczas pomiaru wymiarów',
-        'Sprawdź czy krawędzie są gładkie bez karbów',
-        'Próbki powinny być płaskie bez fałdów'
-      ]
-    },
-    {
-      id: 'apparatus-setup',
-      title: 'Przygotowanie aparatury',
-      duration: '30 minut',
-      instructions: [
-        '1. **Kalibracja siły**: Sprawdź kalibrację czujnika siły',
-        '2. **Ustawienie prędkości**: Ustaw prędkość rozciągania na 500 ± 50 mm/min',
-        '3. **Montaż uchwytów**: Zamontuj odpowiednie uchwyty dla próbek kauczukowych',
-        '4. **Sprawdzenie współosiowości**: Sprawdź współosiowość uchwytów',
-        '5. **Kalibracja ekstensometru**: Skalibruj system pomiaru wydłużenia',
-        '6. **Test zerowy**: Wykonaj test zerowy dla sprawdzenia systemu',
-        '7. **Ustawienia oprogramowania**: Skonfiguruj parametry testu'
-      ],
-      safety: [
-        'Sprawdź czy wszystkie osłony bezpieczeństwa są na miejscu',
-        'Ustaw odpowiednie granice siły dla ochrony próbki',
-        'Upewnij się że przycisk STOP jest dostępny'
-      ],
-      tips: [
-        'Uchwyty powinny być czyste i bez uszkodzeń',
-        'Sprawdź czy nie ma luzu w mechanizmach',
-        'Ustawienia powinny być zapisane jako profil standardowy'
-      ]
-    },
-    {
-      id: 'sample-mounting',
-      title: 'Montaż próbki',
-      duration: '5 minut na próbkę',
-      instructions: [
-        '1. **Pozycjonowanie**: Umieść próbkę w środku szczęk uchwytu',
-        '2. **Równoległość**: Upewnij się że próbka jest równoległa do osi rozciągania',
-        '3. **Docisk**: Delikatnie dociśnij szczęki aby zabezpieczyć próbkę',
-        '4. **Kontrola długości**: Sprawdź początkową długość pomiarową (L₀)',
-        '5. **Oznaczenie punktów**: Nanieś znaczniki do pomiaru wydłużenia (jeśli używany ekstensometr)',
-        '6. **Sprawdzenie luzu**: Upewnij się że próbka nie jest wstępnie naprężona'
-      ],
-      safety: [
-        'Nie dokręcaj uchwytów zbyt mocno - może to uszkodzić próbkę',
-        'Uważaj na ostre krawędzie uchwytów',
-        'Zachowaj palce z daleka od stref zaciskania'
-      ],
-      tips: [
-        'Próbka powinna być symetrycznie zamocowana',
-        'Długość pomiarowa powinna być zgodna z normą',
-        'Sprawdź czy próbka nie ześlizgnie się podczas testu'
-      ]
-    },
-    {
-      id: 'tensile-test',
-      title: 'Wykonanie testu rozciągania',
-      duration: '2-5 minut na próbkę',
-      instructions: [
-        '1. **Zerowanie**: Wyzeruj czujniki siły i przemieszczenia',
-        '2. **Start testu**: Uruchom test z ustawioną prędkością',
-        '3. **Monitoring**: Obserwuj krzywą naprężenie-odkształcenie w czasie rzeczywistym',
-        '4. **Rejestracja danych**: Zapisuj dane z częstotliwością minimum 10 Hz',
-        '5. **Obserwacja zerwania**: Notuj sposób i miejsce zerwania próbki',
-        '6. **Zatrzymanie**: Test kończy się automatycznie po zerwaniu próbki',
-        '7. **Zapis krzywej**: Zapisz kompletną krzywą S-S (naprężenie-odkształcenie)'
-      ],
-      safety: [
-        'Nie zbliżaj się do próbki podczas testu',
-        'Obserwuj test przez osłonę bezpieczeństwa',
-        'Bądź gotowy na nagłe zerwanie próbki'
-      ],
-      tips: [
-        'Krzywa powinna być płynna bez skoków',
-        'Zwracaj uwagę na sposób zerwania (w części roboczej vs. w uchwytach)',
-        'Niektóre materiały mogą wykazywać wydłużenie >500%'
-      ]
-    },
-    {
-      id: 'data-analysis',
-      title: 'Analiza danych',
+      id: 'prep-1',
+      title: 'Przygotowanie Próbek',
+      description: 'Przygotuj próbki testowe zgodnie z ASTM D412',
       duration: '15-20 minut',
       instructions: [
-        '1. **Naprężenie przy zerwaniu (σᵦ)**:',
-        '   σᵦ = Fmax / A₀ [MPa]',
-        '   gdzie: Fmax = maksymalna siła, A₀ = pole przekroju początkowego',
-        '',
-        '2. **Wydłużenie przy zerwaniu (εᵦ)**:',
-        '   εᵦ = (Lᵦ - L₀) / L₀ × 100% [%]',
-        '   gdzie: Lᵦ = długość przy zerwaniu, L₀ = długość początkowa',
-        '',
-        '3. **Moduł sprężystości (E)**:',
-        '   E = Δσ / Δε [MPa] (z części liniowej krzywej)',
-        '',
-        '4. **Naprężenia przy zadanych wydłużeniach**:',
-        '   σ₁₀₀, σ₂₀₀, σ₃₀₀ = naprężenia przy 100%, 200%, 300% wydłużenia',
-        '',
-        '5. **Energia do zerwania**: Pole pod krzywą S-S do punktu zerwania'
+        'Sprawdź grubość materiału (2±0.2mm dla typu C)',
+        'Wybierz odpowiedni typ próbki (C, D lub inny)',
+        'Wykrój próbki używając ostrego narzędzia',
+        'Sprawdź czy krawędzie cięcia są gładkie i prostopadłe',
+        'Zmierz grubość próbki w najwęższej części',
+        'Sprawdź wizualnie czy nie ma defektów'
       ],
-      safety: [],
       tips: [
-        'Odrzuć próbki które zerwały się w uchwytach',
-        'Dla modułu używaj części liniowej krzywej (zazwyczaj 10-40% wydłużenia)',
-        'Sprawdź czy wyniki są spójne między próbkami'
+        'Używaj szablonu do zapewnienia prawidłowych wymiarów',
+        'Cięcie jednym ruchem zapobiega powstawaniu karb',
+        'Próbki typu C są standardowe dla większości zastosowań'
+      ],
+      safety: [
+        'Używaj ostrych narzędzi ostrożnie',
+        'Stabilizuj materiał podczas cięcia',
+        'Upewnij się że ręce są z dala od ostrza'
       ]
     },
     {
-      id: 'statistical-analysis',
-      title: 'Analiza statystyczna',
+      id: 'setup-1',
+      title: 'Konfiguracja Sprzętu',
+      description: 'Skonfiguruj maszynę testową dla elastomerów',
+      duration: '10-15 minut',
+      instructions: [
+        'Sprawdź kalibrację czujnika siły',
+        'Zainstaluj odpowiednie uchwyty dla gumy',
+        'Ustaw prędkość rozciągania (500 mm/min)',
+        'Skonfiguruj akwizycję danych (siła vs. przemieszczenie)',
+        'Sprawdź zakres pomiaru ekstensometru',
+        'Wyzeruj czujnik siły bez próbki'
+      ],
+      tips: [
+        'Uchwyty muszą zapobiegać poślizgowi bez uszkadzania próbki',
+        'Sprawdź czy ekstensometr nie wywiera nadmiernej siły',
+        'Test kalibracyjny z materiałem referencyjnym'
+      ],
+      safety: [
+        'Sprawdź funkcję awaryjnego zatrzymania',
+        'Upewnij się że osłony są na miejscu',
+        'Sprawdź czy zakres czujnika siły jest odpowiedni'
+      ]
+    },
+    {
+      id: 'test-1',
+      title: 'Montaż Próbki',
+      description: 'Zamontuj próbkę w uchwyty maszyny',
+      duration: '5 minut na próbkę',
+      instructions: [
+        'Zamocuj próbkę w dolnym uchwycie',
+        'Wyrównaj próbkę osiowo z kierunkiem rozciągania',
+        'Zamocuj górny uchwyt z minimalnym naprężeniem wstępnym',
+        'Sprawdź czy próbka jest prosto zamocowana',
+        'Zainstaluj ekstensometr w części pomiarowej',
+        'Sprawdź czy długość pomiarowa jest prawidłowa'
+      ],
+      tips: [
+        'Unikaj przekręcania próbki podczas mocowania',
+        'Równomierne mocowanie w uchwytach',
+        'Minimalne naprężenie wstępne aby usunąć luz'
+      ],
+      safety: [
+        'Sprawdź stabilność mocowania próbki',
+        'Uważaj na ostre krawędzie uchwytów',
+        'Ekstensometr nie może uszkodzić próbki'
+      ]
+    },
+    {
+      id: 'test-2',
+      title: 'Wykonanie Testu',
+      description: 'Przeprowadź test rozciągania',
+      duration: '5-10 minut na próbkę',
+      instructions: [
+        'Uruchom akwizycję danych',
+        'Rozpocznij rozciąganie ze stałą prędkością',
+        'Obserwuj próbkę podczas testu',
+        'Zapisuj naprężenia przy wydłużeniach 100%, 200%, 300%',
+        'Kontynuuj do zerwania próbki',
+        'Zapisz siłę maksymalną i wydłużenie przy zerwaniu'
+      ],
+      tips: [
+        'Obserwuj równomierność deformacji próbki',
+        'Zwróć uwagę na miejsce zerwania',
+        'Zapisuj wszystkie anomalie podczas testu'
+      ],
+      safety: [
+        'Bądź przygotowany na gwałtowne zniszczenie',
+        'Nie dotykaj próbki podczas rozciągania',
+        'Sprawdź czy ekstensometr nie przeszkadza'
+      ]
+    },
+    {
+      id: 'calc-1',
+      title: 'Obliczenia i Analiza',
+      description: 'Oblicz właściwości mechaniczne',
       duration: '10 minut',
       instructions: [
-        '1. **Wartości średnie**: Oblicz średnie arytmetyczne wszystkich parametrów',
-        '2. **Odchylenie standardowe**: Oblicz odchylenie standardowe dla każdego parametru',
-        '3. **Współczynnik zmienności**: CV = (s/x̄) × 100%',
-        '4. **Wartości odstające**: Sprawdź metodą Dixona lub Grubbsa',
-        '5. **Minimum próbek**: Użyj minimum 5 próbek do obliczeń',
-        '6. **Przedziały ufności**: Oblicz przedziały ufności 95%'
+        'Oblicz naprężenie: σ = F / A₀ [MPa]',
+        'Oblicz wydłużenie: ε = (L - L₀) / L₀ × 100% [%]',
+        'Określ wytrzymałość na rozciąganie (naprężenie maksymalne)',
+        'Określ wydłużenie przy zerwaniu',
+        'Oblicz moduły przy 100%, 200%, 300% wydłużenia',
+        'Sprawdź czy zerwanie nastąpiło w części pomiarowej'
       ],
-      safety: [],
       tips: [
-        'Typowy CV dla kauczuków: 5-15%',
-        'Jeśli CV > 20%, sprawdź przygotowanie próbek',
-        'Zachowaj wszystkie dane do dokumentacji'
-      ]
-    },
-    {
-      id: 'reporting',
-      title: 'Raportowanie wyników',
-      duration: '20 minut',
-      instructions: [
-        '1. **Protokół badania** powinien zawierać:',
-        '   - Identyfikację materiału i próbek',
-        '   - Warunki badania (temperatura, wilgotność, prędkość)',
-        '   - Typ próbki (C, 1, lub 2)',
-        '   - Wymiary próbek',
-        '   - Wyniki poszczególnych próbek',
-        '   - Wartości średnie z odchyleniami standardowymi',
-        '   - Krzywe naprężenie-odkształcenie',
-        '',
-        '2. **Format raportowania**:',
-        '   - Wytrzymałość na rozciąganie: XX.X ± Y.Y MPa',
-        '   - Wydłużenie przy zerwaniu: XXX ± YY %',
-        '   - Moduł przy 100%: XX.X ± Y.Y MPa',
-        '',
-        '3. **Dokumentacja graficzna**:',
-        '   - Reprezentatywne krzywe S-S',
-        '   - Zdjęcia próbek po zerwaniu',
-        '   - Wykresy statystyczne'
+        'Użyj początkowego przekroju próbki do obliczeń',
+        'Sprawdź linearność w zakresie małych odkształceń',
+        'Odrzuć wyniki jeśli zerwanie poza częścią pomiarową'
       ],
-      safety: [],
-      tips: [
-        'Dołącz informacje o sposobie zerwania próbek',
-        'Porównaj wyniki z danymi producenta lub normami',
-        'Zachowaj fragmenty próbek do ewentualnej weryfikacji'
-      ]
+      safety: []
     }
   ],
 
   calculations: {
-    tensile_strength: {
-      formula: 'σᵦ = Fmax / A₀',
-      units: 'MPa',
-      description: 'Wytrzymałość na rozciąganie'
-    },
-    elongation_at_break: {
-      formula: 'εᵦ = ((Lᵦ - L₀) / L₀) × 100',
-      units: '%',
-      description: 'Wydłużenie przy zerwaniu'
-    },
-    modulus: {
-      formula: 'E = Δσ / Δε',
-      units: 'MPa',
-      description: 'Moduł sprężystości'
-    },
-    stress_at_strain: {
-      formula: 'σₓ = F / A₀ przy x% wydłużenia',
-      units: 'MPa',
-      description: 'Naprężenie przy zadanym wydłużeniu'
+    stress: 'σ = F / A₀ [MPa]',
+    strain: 'ε = (L - L₀) / L₀ × 100 [%]',
+    modulus: 'E = Δσ / Δε [MPa]',
+    where: {
+      'F': 'siła [N]',
+      'A₀': 'początkowy przekrój próbki [mm²]',
+      'L': 'aktualna długość [mm]',
+      'L₀': 'początkowa długość pomiarowa [mm]'
     }
   },
 
-  acceptance_criteria: {
-    sample_count: 'Minimum 5 próbek',
-    cv_limit: 'Współczynnik zmienności ≤ 20%',
-    break_location: 'Zerwanie w części roboczej próbki',
-    temperature_tolerance: '± 2°C',
-    speed_tolerance: '± 10%'
+  acceptanceCriteria: {
+    sampleGeometry: 'Próbka zgodna z wymiarami ASTM D412',
+    failureLocation: 'Zerwanie w części pomiarowej próbki',
+    minimumSamples: 'Minimum 5 prawidłowych próbek na test',
+    repeatability: 'Współczynnik zmienności < 15% dla wytrzymałości'
   },
 
-  typical_values: [
-    { material: 'NR (miękki)', tensile_strength: '15-25 MPa', elongation: '400-700%' },
-    { material: 'NR (twardy)', tensile_strength: '20-35 MPa', elongation: '300-500%' },
-    { material: 'SBR', tensile_strength: '10-25 MPa', elongation: '300-600%' },
-    { material: 'NBR', tensile_strength: '15-30 MPa', elongation: '200-500%' },
-    { material: 'EPDM', tensile_strength: '10-20 MPa', elongation: '300-600%' },
-    { material: 'Silikon', tensile_strength: '4-10 MPa', elongation: '100-800%' }
+  commonIssues: [
+    {
+      problem: 'Zerwanie przy uchwycie',
+      causes: [
+        'Za mocne dokręcenie uchwytów',
+        'Koncentracja naprężeń przy uchwycie',
+        'Niewłaściwy kształt próbki',
+        'Uszkodzenie próbki podczas mocowania'
+      ],
+      solutions: [
+        'Zmniejsz siłę dociskania uchwytów',
+        'Sprawdź profil próbki w miejscu uchwytu',
+        'Użyj próbek z łagodnymi przejściami',
+        'Ostrożnie manipuluj próbkami'
+      ]
+    },
+    {
+      problem: 'Poślizg próbki w uchwytach',
+      causes: [
+        'Za słabe mocowanie',
+        'Gładka powierzchnia próbki',
+        'Niewłaściwe uchwyty',
+        'Za wysokie naprężenia'
+      ],
+      solutions: [
+        'Zwiększ siłę dociskania (ostrożnie)',
+        'Użyj środka zwiększającego przyczepność',
+        'Zamontuj odpowiednie uchwyty teksturowane',
+        'Sprawdź geometrię próbki'
+      ]
+    },
+    {
+      problem: 'Nieregularne krzywe naprężenie-odkształcenie',
+      causes: [
+        'Niejednorodność materiału',
+        'Defekty w próbce',
+        'Nieprawidłowa prędkość testu',
+        'Problemy z ekstensometrem'
+      ],
+      solutions: [
+        'Sprawdź jakość materiału',
+        'Przygotuj próbki ostrożniej',
+        'Sprawdź kalibrację prędkości',
+        'Skalibruj ekstensometr'
+      ]
+    }
   ],
 
-  common_issues: [
-    {
-      problem: 'Zerwanie w uchwytach',
-      causes: ['Zbyt mocny docisk', 'Ostre krawędzie uchwytów', 'Nieprawidłowe pozycjonowanie'],
-      solutions: ['Zmniejsz siłę docisku', 'Sprawdź stan uchwytów', 'Lepsze wyśrodkowanie próbki']
-    },
-    {
-      problem: 'Duże rozrzuty wyników',
-      causes: ['Niejednorodność materiału', 'Błędy w przygotowaniu próbek', 'Niestabilne warunki'],
-      solutions: ['Sprawdź jakość materiału', 'Popraw technike wykrawania', 'Kontroluj warunki środowiskowe']
-    },
-    {
-      problem: 'Nieprawidłowa krzywa S-S',
-      causes: ['Poślizg w uchwytach', 'Błąd kalibracji', 'Za duża prędkość testu'],
-      solutions: ['Zwiększ docisk (ostrożnie)', 'Sprawdź kalibrację', 'Zmniejsz prędkość testu']
-    },
-    {
-      problem: 'Przedwczesne zerwanie',
-      causes: ['Karby w próbce', 'Uszkodzenia przy wykrawaniu', 'Wady materiałowe'],
-      solutions: ['Sprawdź ostrość wykrojnika', 'Popraw technikę wykrawania', 'Wybierz lepszy fragment materiału']
-    }
+  typicalValues: {
+    'Guma naturalna': 'Wytrzymałość: 20-35 MPa, Wydłużenie: 300-800%',
+    'SBR': 'Wytrzymałość: 10-25 MPa, Wydłużenie: 200-600%',
+    'NBR': 'Wytrzymałość: 15-30 MPa, Wydłużenie: 200-500%',
+    'EPDM': 'Wytrzymałość: 10-20 MPa, Wydłużenie: 300-600%',
+    'Silikon': 'Wytrzymałość: 5-15 MPa, Wydłużenie: 200-800%',
+    'Poliuretan': 'Wytrzymałość: 20-60 MPa, Wydłużenie: 300-1000%'
+  },
+
+  references: [
+    'ASTM D412-16 - Standard Test Methods for Vulcanized Rubber and Thermoplastic Elastomers—Tension',
+    'ISO 37:2017 - Rubber, vulkanized or thermoplastic — Determination of tensile stress-strain properties',
+    'DIN 53504 - Testing of rubber - Determination of tensile strength at break, tensile stress at yield, elongation at break'
   ]
 };
-
-export default ASTMD412Protocol;

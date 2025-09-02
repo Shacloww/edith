@@ -3,27 +3,49 @@
  * Centralny punkt dostępu do wszystkich protokołów badawczych
  */
 
-import { ISO1133Protocol } from './iso-1133-melt-flow-rate';
-import { ISO289Protocol } from './iso-289-mooney-viscosity';
-import { ASTMD412Protocol } from './astm-d412-tensile-strength';
+import { iso1133Protocol } from './iso-1133-melt-flow-rate';
+import { iso289Protocol } from './iso-289-mooney-viscosity';
+import { astmD412Protocol } from './astm-d412-tensile-strength';
+import { astmC772Protocol } from './astm-c772-plasticizer-migration';
+import { iso1183Protocol } from './iso-1183-density';
+import { iso11357Protocol } from './iso-11357-dsc';
+import { iso3451Protocol } from './iso-3451-ash-content';
+import { ul94Protocol } from './ul-94-flammability';
+import { astmD2863Protocol } from './astm-d2863-loi';
+import { astmE28Protocol } from './astm-e28-18-softening-point';
+import { iso4892Protocol } from './iso-4892-2-weathering';
+import { astmD638Protocol } from './astm-d638-tensile-properties';
+import { astmD790Protocol } from './astm-d790-flexural-properties';
+import { astmD256Protocol } from './astm-d256-izod-impact';
+import { astmD648Protocol } from './astm-d648-deflection-temperature';
 
 export interface ResearchProtocol {
   id: string;
   title: string;
-  version: string;
-  category: string;
   description: string;
-  equipment: {
-    required: string[];
-    optional: string[];
+  category: string;
+  estimatedDuration: string;
+  difficulty: string;
+  overview: {
+    purpose: string;
+    scope: string;
+    principles: string;
+    standards: string[];
   };
+  equipment: any[];
+  materials: string[];
+  safetyGuidelines: string[];
   testConditions: any;
   steps: ProtocolStep[];
-  calculations: any;
-  acceptance_criteria: any;
-  common_issues?: CommonIssue[];
-  typical_values?: TypicalValue[];
-  maintenance?: any;
+  calculations?: any[];
+  acceptanceCriteria?: string[];
+  commonIssues?: CommonIssue[];
+  typicalValues?: TypicalValue[];
+  references?: string[];
+  notes?: string[];
+  // Dla starych protokołów
+  version?: string;
+  acceptance_criteria?: any;
 }
 
 export interface ProtocolStep {
@@ -36,24 +58,49 @@ export interface ProtocolStep {
 }
 
 export interface CommonIssue {
-  problem: string;
-  causes: string[];
-  solutions: string[];
+  issue: string;
+  cause: string;
+  solution: string;
+  // Dla starych protokołów
+  problem?: string;
+  causes?: string[];
+  solutions?: string[];
 }
 
 export interface TypicalValue {
+  id: string;
+  parameter: string;
   material: string;
-  range?: string;
-  tensile_strength?: string;
-  elongation?: string;
-  comment?: string;
+  value: string;
+  unit: string;
+  range: {
+    min: string;
+    max: string;
+  };
+  conditions: string;
+  category: 'mechanical' | 'thermal' | 'electrical' | 'chemical' | 'dimensional' | 'optical';
+  source: string;
+  notes?: string;
+  isReference: boolean;
 }
 
 // Eksport wszystkich protokołów
-export const ResearchProtocols: Record<string, ResearchProtocol> = {
-  'iso-1133-mfr': ISO1133Protocol,
-  'iso-289-mooney': ISO289Protocol,
-  'astm-d412-tensile': ASTMD412Protocol,
+export const ResearchProtocols: Record<string, any> = {
+  // 'iso-1133-mfr': iso1133Protocol,
+  'iso-289-mooney': iso289Protocol,
+  // 'astm-d412-tensile': astmD412Protocol,
+  'astm-c772-migration': astmC772Protocol,
+  'iso-1183-density': iso1183Protocol,
+  'iso-11357-dsc': iso11357Protocol,
+  'iso-3451-ash': iso3451Protocol,
+  'ul-94-flammability': ul94Protocol,
+  'astm-d2863-loi': astmD2863Protocol,
+  'astm-e28-softening': astmE28Protocol,
+  'iso-4892-weathering': iso4892Protocol,
+  'astm-d638-tensile': astmD638Protocol,
+  'astm-d790-flexural': astmD790Protocol,
+  'astm-d256-izod': astmD256Protocol,
+  'astm-d648-hdt': astmD648Protocol,
 };
 
 // Funkcje pomocnicze

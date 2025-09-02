@@ -6,45 +6,309 @@ export interface RequestWithPrisma extends Request {
   prisma: PrismaClient;
 }
 
-// Typy dla pytań w schemacie badawczym
-export type QuestionType = 
-  | 'SINGLE_CHOICE'
-  | 'MULTIPLE_CHOICE' 
-  | 'TEXT' 
-  | 'NUMBER' 
-  | 'SCALE'
-  | 'DATE';
+// ===== ENUMS (ponownie zdefiniowane z Prismy) =====
 
-export interface QuestionOption {
-  value: string;
-  label: string;
+export enum ProtocolType {
+  PREDEFINED = 'PREDEFINED',
+  USER = 'USER'
 }
 
-export interface QuestionValidation {
-  min?: number;
-  max?: number;
-  minLabel?: string;
-  maxLabel?: string;
-  pattern?: string;
-  required?: boolean;
+export enum DataPointType {
+  MEASUREMENT = 'MEASUREMENT',
+  OBSERVATION = 'OBSERVATION',
+  CALCULATION = 'CALCULATION',
+  CONDITION = 'CONDITION'
 }
 
-export interface Question {
+export enum DataType {
+  NUMBER = 'NUMBER',
+  TEXT = 'TEXT',
+  BOOLEAN = 'BOOLEAN',
+  DATE = 'DATE',
+  FILE = 'FILE',
+  SELECTION = 'SELECTION'
+}
+
+export enum ConditionCategory {
+  ENVIRONMENTAL = 'ENVIRONMENTAL',
+  MECHANICAL = 'MECHANICAL',
+  CHEMICAL = 'CHEMICAL',
+  TEMPORAL = 'TEMPORAL',
+  DIMENSIONAL = 'DIMENSIONAL',
+  ELECTRICAL = 'ELECTRICAL',
+  OPTICAL = 'OPTICAL'
+}
+
+export enum CalculationCategory {
+  MECHANICAL = 'MECHANICAL',
+  STATISTICAL = 'STATISTICAL',
+  DIMENSIONAL = 'DIMENSIONAL',
+  CHEMICAL = 'CHEMICAL',
+  THERMAL = 'THERMAL',
+  CUSTOM = 'CUSTOM'
+}
+
+export enum ValueCategory {
+  MECHANICAL = 'MECHANICAL',
+  THERMAL = 'THERMAL',
+  ELECTRICAL = 'ELECTRICAL',
+  CHEMICAL = 'CHEMICAL',
+  DIMENSIONAL = 'DIMENSIONAL',
+  OPTICAL = 'OPTICAL',
+  PHYSICAL = 'PHYSICAL'
+}
+
+export enum IssueSeverity {
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
+  CRITICAL = 'CRITICAL'
+}
+
+export enum StudyStatus {
+  DRAFT = 'DRAFT',
+  ACTIVE = 'ACTIVE',
+  ARCHIVED = 'ARCHIVED',
+  DELETED = 'DELETED'
+}
+
+export enum SessionStatus {
+  PLANNED = 'PLANNED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
+  CANCELLED = 'CANCELLED',
+  PAUSED = 'PAUSED'
+}
+
+export enum SampleStatus {
+  PENDING = 'PENDING',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
+  REJECTED = 'REJECTED'
+}
+
+// ===== PROTOKOŁY BADAWCZE =====
+
+export interface ProtocolOverview {
+  purpose: string;
+  scope: string;
+  principles: string;
+  standards: string[];
+}
+
+export interface ProtocolEquipment {
+  name: string;
+  specification: string;
+}
+
+export interface ProtocolStep {
   id: string;
   title: string;
-  type: QuestionType;
-  required: boolean;
   description?: string;
-  instructions?: string;
-  placeholder?: string;
-  options?: string[];
-  validation?: QuestionValidation;
+  duration?: string;
+  instructions: string[];
+  tips: string[];
+  safety: string[];
 }
 
-// Study Status enum (jako string literals dla SQLite)
-export type StudyStatus = 'DRAFT' | 'ACTIVE' | 'COMPLETED' | 'PAUSED';
+export interface ProtocolDataPoint {
+  name: string;
+  description?: string;
+  parameterType: DataPointType;
+  dataType: DataType;
+  unit?: string;
+  isRequired: boolean;
+  minValue?: number;
+  maxValue?: number;
+  pattern?: string;
+  options?: any;
+  isCalculated?: boolean;
+  formula?: string;
+}
 
-// Typy dla API responses
+export interface ProtocolTestCondition {
+  name: string;
+  value: string;
+  unit?: string;
+  tolerance?: string;
+  category: ConditionCategory;
+  required: boolean;
+  description?: string;
+}
+
+export interface ProtocolCalculation {
+  parameter: string;
+  formula: string;
+  units: string;
+  description: string;
+}
+
+export interface ProtocolTypicalValue {
+  parameter: string;
+  material: string;
+  value: string;
+  unit?: string;
+  minRange?: string;
+  maxRange?: string;
+  conditions?: string;
+  category: ValueCategory;
+  source?: string;
+  isReference?: boolean;
+  notes?: string;
+}
+
+export interface ProtocolCommonIssue {
+  issue: string;
+  cause: string;
+  solution: string;
+  severity?: IssueSeverity;
+  frequency?: string;
+}
+
+// Interfejs dla protokołów z folderu data
+export interface ResearchProtocolData {
+  id: string;
+  title: string;
+  description?: string;
+  category: string;
+  difficulty?: string;
+  estimatedDuration?: string;
+  version?: string;
+  
+  overview?: ProtocolOverview;
+  equipment?: ProtocolEquipment[];
+  materials?: string[];
+  safetyGuidelines?: string[];
+  testConditions?: any;
+  
+  steps: ProtocolStep[];
+  calculations?: ProtocolCalculation[];
+  acceptanceCriteria?: string[];
+  commonIssues?: ProtocolCommonIssue[];
+  typicalValues?: ProtocolTypicalValue[];
+  references?: string[];
+  notes?: string[];
+}
+
+// ===== BADANIA I SESJE =====
+
+export interface StudySettings {
+  numberOfSamples?: number;
+  testConditions?: Record<string, any>;
+  dataCollection?: {
+    automatic?: boolean;
+    manualEntry?: boolean;
+    fileUpload?: boolean;
+  };
+  qualityControl?: {
+    duplicateChecks?: boolean;
+    rangeValidation?: boolean;
+    outlierDetection?: boolean;
+  };
+}
+
+export interface StudyParameter {
+  name: string;
+  type: 'input' | 'calculated' | 'condition';
+  unit?: string;
+  defaultValue?: any;
+  validationRules?: {
+    min?: number;
+    max?: number;
+    required?: boolean;
+  };
+}
+
+// ===== DTO INTERFACES =====
+
+export interface CreateProtocolDto {
+  title: string;
+  description?: string;
+  category: string;
+  difficulty?: string;
+  estimatedDuration?: string;
+  overview?: ProtocolOverview;
+  equipment?: ProtocolEquipment[];
+  materials?: string[];
+  safetyGuidelines?: string[];
+  testConditions?: any;
+  steps: ProtocolStep[];
+  calculations?: ProtocolCalculation[];
+  typicalValues?: ProtocolTypicalValue[];
+  commonIssues?: ProtocolCommonIssue[];
+  references?: string[];
+  notes?: string[];
+}
+
+export interface UpdateProtocolDto extends Partial<CreateProtocolDto> {}
+
+export interface CreateStudyDto {
+  name: string;
+  description?: string;
+  protocolId: string;
+  category?: string;
+  settings?: StudySettings;
+  parameters?: StudyParameter[];
+}
+
+export interface UpdateStudyDto extends Partial<CreateStudyDto> {
+  status?: StudyStatus;
+}
+
+export interface CreateStudySessionDto {
+  studyId: string;
+  sessionName: string;
+  description?: string;
+  operatorId: string;
+  totalSamples: number;
+  notes?: string;
+}
+
+export interface UpdateStudySessionDto extends Partial<CreateStudySessionDto> {
+  status?: SessionStatus;
+  currentStepId?: string;
+  completedSteps?: number;
+  completedSamples?: number;
+  startedAt?: Date;
+  completedAt?: Date;
+}
+
+export interface CreateStudySampleDto {
+  sessionId: string;
+  sampleNumber: number;
+  sampleName: string;
+  description?: string;
+  properties?: any;
+  notes?: string;
+}
+
+export interface UpdateStudySampleDto extends Partial<CreateStudySampleDto> {
+  status?: SampleStatus;
+  startTime?: Date;
+  endTime?: Date;
+}
+
+export interface CreateStudyResultDto {
+  sessionId: string;
+  sampleId?: string;
+  stepId: string;
+  dataPointId: string;
+  value: string;
+  unit?: string;
+  measuredBy: string;
+  isCalculated?: boolean;
+  uncertainty?: number;
+  validationNotes?: string;
+}
+
+export interface UpdateStudyResultDto extends Partial<CreateStudyResultDto> {
+  isValid?: boolean;
+}
+
+// ===== API RESPONSE TYPES =====
+
 export interface ApiResponse<T = any> {
   success: boolean;
   data?: T;
@@ -52,89 +316,3 @@ export interface ApiResponse<T = any> {
   message?: string;
   details?: any[];
 }
-
-// Typy dla statystyk
-export interface QuestionStatistics {
-  title: string;
-  type: QuestionType;
-  totalAnswers: number;
-  responseRate: string;
-  averageLength?: string;
-  min?: number;
-  max?: number;
-  average?: string;
-  distribution?: Record<string, number>;
-}
-
-export interface StudyStatistics {
-  totalResponses: number;
-  questionStats: Record<string, QuestionStatistics>;
-}
-
-// Typy dla DTO (Data Transfer Objects)
-export interface CreateResearchSchemaDto {
-  title: string;
-  description?: string;
-  protocol_id?: string;
-  questions: Question[];
-}
-
-export interface UpdateResearchSchemaDto {
-  title?: string;
-  description?: string;
-  questions?: Question[];
-}
-
-export interface CreateStudyDto {
-  title: string;
-  description?: string;
-  researchSchemaId: string;
-  startDate?: string;
-  endDate?: string;
-}
-
-export interface UpdateStudyDto {
-  title?: string;
-  description?: string;
-  status?: StudyStatus;
-  startDate?: string;
-  endDate?: string;
-}
-
-export interface CreateResponseDto {
-  studyId: string;
-  answers: Record<string, any>;
-}
-
-// Validation result type
-export interface ValidationResult {
-  valid: boolean;
-  errors: string[];
-}
-
-// Helper functions for JSON serialization
-export const serializeQuestions = (questions: Question[]): string => {
-  return JSON.stringify(questions);
-};
-
-export const deserializeQuestions = (questionsJson: string): Question[] => {
-  try {
-    return JSON.parse(questionsJson);
-  } catch (error) {
-    console.error('Error parsing questions JSON:', error);
-    return [];
-  }
-};
-
-export const serializeAnswers = (answers: Record<string, any>): string => {
-  return JSON.stringify(answers);
-};
-
-export const deserializeAnswers = (answersJson: string): Record<string, any> => {
-  try {
-    return JSON.parse(answersJson);
-  } catch (error) {
-    console.error('Error parsing answers JSON:', error);
-    return {};
-  }
-};

@@ -1,27 +1,58 @@
-import { Router } from 'express';
+import express from 'express';
+import { body, param } from 'express-validator';
 import { 
   getProtocols, 
   getProtocolByIdController, 
-  getCategories, 
-  getProtocolSteps, 
-  getProtocolStep 
+  getProtocolsByCategory,
+  getProtocolCategoriesController,
+  createProtocol,
+  updateProtocol,
+  deleteProtocol
 } from '../controllers/protocolController';
 
-const router = Router();
+const router = express.Router();
 
-// GET /api/protocols/categories - Pobierz kategorie protokołów (musi być przed /:id)
-router.get('/categories', getCategories);
+// Walidatory
+const createProtocolValidation = [
+  body('title')
+    .trim()
+    .isLength({ min: 1, max: 200 })
+    .withMessage('Tytuł musi mieć od 1 do 200 znaków'),
+  body('description')
+    .optional()
+    .trim()
+    .isLength({ max: 1000 })
+    .withMessage('Opis może mieć maksymalnie 1000 znaków'),
+  body('category')
+    .trim()
+    .isLength({ min: 1, max: 100 })
+    .withMessage('Kategoria jest wymagana'),
+  body('difficulty')
+    .optional()
+    .isIn(['easy', 'intermediate', 'advanced'])
+    .withMessage('Nieprawidłowy poziom trudności')
+];
 
-// GET /api/protocols - Pobierz wszystkie protokoły (z opcjonalnym filtrem kategorii)
+const updateProtocolValidation = [
+  param('id').isString().withMessage('ID musi być stringiem'),
+  ...createProtocolValidation.map(validator => validator.optional())
+];
+
+const getProtocolValidation = [
+  param('id').isString().withMessage('ID musi być stringiem')
+];
+
+const getCategoryValidation = [
+  param('category').isString().withMessage('Kategoria musi być stringiem')
+];
+
+// Routes
 router.get('/', getProtocols);
-
-// GET /api/protocols/:id - Pobierz konkretny protokół
-router.get('/:id', getProtocolByIdController);
-
-// GET /api/protocols/:id/steps - Pobierz kroki konkretnego protokołu
-router.get('/:id/steps', getProtocolSteps);
-
-// GET /api/protocols/:id/step/:stepId - Pobierz konkretny krok protokołu
-router.get('/:id/step/:stepId', getProtocolStep);
+router.get('/categories', getProtocolCategoriesController);
+router.get('/category/:category', getCategoryValidation, getProtocolsByCategory);
+router.get('/:id', getProtocolValidation, getProtocolByIdController);
+router.post('/', createProtocolValidation, createProtocol);
+router.put('/:id', updateProtocolValidation, updateProtocol);
+router.delete('/:id', getProtocolValidation, deleteProtocol);
 
 export default router;

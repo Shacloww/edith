@@ -1,16 +1,10 @@
 import axios, { AxiosResponse } from 'axios';
 import {
   ApiResponse,
-  ResearchSchema,
   Study,
-  Response as SurveyResponse,
-  CreateResearchSchemaForm,
-  UpdateResearchSchemaForm,
+  StudyStatus,
   CreateStudyForm,
-  UpdateStudyForm,
-  SubmitResponseForm,
-  StudyStatistics,
-  StudyStatus
+  UpdateStudyForm
 } from '../types';
 
 // Konfiguracja axios
@@ -21,6 +15,8 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+console.log('API BASE URL:', api.defaults.baseURL);
 
 // Interceptory dla obsługi błędów
 api.interceptors.response.use(
@@ -36,39 +32,6 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-// Research Schemas API
-export const researchSchemasApi = {
-  // Pobierz wszystkie schematy
-  getAll: async (): Promise<ApiResponse<ResearchSchema[]>> => {
-    const response = await api.get<ApiResponse<ResearchSchema[]>>('/research-schemas');
-    return response.data;
-  },
-
-  // Pobierz schemat po ID
-  getById: async (id: string): Promise<ApiResponse<ResearchSchema>> => {
-    const response = await api.get<ApiResponse<ResearchSchema>>(`/research-schemas/${id}`);
-    return response.data;
-  },
-
-  // Utwórz nowy schemat
-  create: async (data: CreateResearchSchemaForm): Promise<ApiResponse<ResearchSchema>> => {
-    const response = await api.post<ApiResponse<ResearchSchema>>('/research-schemas', data);
-    return response.data;
-  },
-
-  // Aktualizuj schemat
-  update: async (id: string, data: UpdateResearchSchemaForm): Promise<ApiResponse<ResearchSchema>> => {
-    const response = await api.put<ApiResponse<ResearchSchema>>(`/research-schemas/${id}`, data);
-    return response.data;
-  },
-
-  // Usuń schemat
-  delete: async (id: string): Promise<ApiResponse> => {
-    const response = await api.delete<ApiResponse>(`/research-schemas/${id}`);
-    return response.data;
-  },
-};
 
 // Studies API
 export const studiesApi = {
@@ -109,68 +72,56 @@ export const studiesApi = {
   },
 };
 
-// Responses API
-export const responsesApi = {
-  // Pobierz odpowiedzi dla badania
-  getByStudy: async (studyId: string): Promise<ApiResponse<{ study: Study; responses: SurveyResponse[] }>> => {
-    const response = await api.get<ApiResponse<{ study: Study; responses: SurveyResponse[] }>>(`/responses/study/${studyId}`);
+// Predefined Protocols API
+export const predefinedProtocolsApi = {
+  // Pobierz wszystkie predefiniowane protokoły
+  getAll: async (): Promise<ApiResponse<any[]>> => {
+    const response = await api.get<ApiResponse<any[]>>('/predefined-protocols');
     return response.data;
   },
 
-  // Pobierz odpowiedź po ID
-  getById: async (id: string): Promise<ApiResponse<SurveyResponse>> => {
-    const response = await api.get<ApiResponse<SurveyResponse>>(`/responses/${id}`);
+  // Pobierz protokół po ID
+  getById: async (id: string): Promise<ApiResponse<any>> => {
+    const response = await api.get<ApiResponse<any>>(`/predefined-protocols/${id}`);
     return response.data;
   },
 
-  // Prześlij nową odpowiedź
-  submit: async (data: SubmitResponseForm): Promise<ApiResponse<SurveyResponse>> => {
-    const response = await api.post<ApiResponse<SurveyResponse>>('/responses', data);
-    return response.data;
-  },
-
-  // Usuń odpowiedź
-  delete: async (id: string): Promise<ApiResponse> => {
-    const response = await api.delete<ApiResponse>(`/responses/${id}`);
-    return response.data;
-  },
-
-  // Pobierz statystyki dla badania
-  getStatistics: async (studyId: string): Promise<ApiResponse<StudyStatistics>> => {
-    const response = await api.get<ApiResponse<StudyStatistics>>(`/responses/study/${studyId}/statistics`);
+  // Pobierz protokoły według kategorii
+  getByCategory: async (category: string): Promise<ApiResponse<any[]>> => {
+    const response = await api.get<ApiResponse<any[]>>(`/predefined-protocols/category/${category}`);
     return response.data;
   },
 };
 
-// Predefined Schemas API
-export const predefinedSchemasApi = {
-  // Pobierz wszystkie predefiniowane schematy
-  getAll: async (): Promise<ApiResponse<CreateResearchSchemaForm[]>> => {
-    const response = await api.get<ApiResponse<CreateResearchSchemaForm[]>>('/predefined-schemas');
+// Protocols API
+export const protocolsApi = {
+  // Pobierz wszystkie protokoły
+  getAll: async (): Promise<ApiResponse<any[]>> => {
+    const response = await api.get<ApiResponse<any[]>>('/protocols');
     return response.data;
   },
 
-  // Pobierz predefiniowany schemat po indeksie
-  getByIndex: async (index: number): Promise<ApiResponse<CreateResearchSchemaForm>> => {
-    const response = await api.get<ApiResponse<CreateResearchSchemaForm>>(`/predefined-schemas/${index}`);
+  // Pobierz protokół po ID
+  getById: async (id: string): Promise<ApiResponse<any>> => {
+    const response = await api.get<ApiResponse<any>>(`/protocols/${id}`);
     return response.data;
   },
 
-  // Importuj predefiniowany schemat do bazy danych
-  importSchema: async (index: number): Promise<ApiResponse<ResearchSchema>> => {
-    const response = await api.post<ApiResponse<ResearchSchema>>(`/predefined-schemas/import/${index}`);
+  // Utwórz nowy protokół
+  create: async (data: any): Promise<ApiResponse<any>> => {
+    const response = await api.post<ApiResponse<any>>('/protocols', data);
     return response.data;
   },
 
-  // Importuj wszystkie predefiniowane schematy
-  importAll: async (): Promise<ApiResponse<{
-    imported: ResearchSchema[];
-    skipped: Array<{ title: string; reason: string }>;
-    importedCount: number;
-    skippedCount: number;
-    totalProcessed: number;
-  }>> => {
-    const response = await api.post<ApiResponse<any>>('/predefined-schemas/import-all');
+  // Aktualizuj protokół
+  update: async (id: string, data: any): Promise<ApiResponse<any>> => {
+    const response = await api.put<ApiResponse<any>>(`/protocols/${id}`, data);
+    return response.data;
+  },
+
+  // Usuń protokół
+  delete: async (id: string): Promise<ApiResponse> => {
+    const response = await api.delete<ApiResponse>(`/protocols/${id}`);
     return response.data;
   },
 };

@@ -1,462 +1,253 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
-  Box,
+  Container,
   Typography,
-  Card,
-  CardContent,
+  Box,
   TextField,
   Button,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
+  Card,
+  CardContent,
   Alert,
+  CircularProgress,
   Grid,
-  Stepper,
-  Step,
-  StepLabel,
-  Paper,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemButton,
-  Chip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions
+  Chip
 } from '@mui/material';
-import { toast } from 'react-hot-toast';
-import { researchSchemasApi, predefinedSchemasApi, studiesApi } from '../services/api';
-import { ResearchSchema, CreateStudyForm, StudyStatus } from '../types';
-
-const steps = ['Wybór schematu', 'Szczegóły badania', 'Podsumowanie'];
+import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
+import { useStudies, usePredefinedProtocols } from '../hooks';
 
 const CreateStudy: React.FC = () => {
   const navigate = useNavigate();
-  const [activeStep, setActiveStep] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  
-  // Dane formularza
-  const [selectedSchema, setSelectedSchema] = useState<ResearchSchema | null>(null);
-  const [studyData, setStudyData] = useState({
-    title: '',
+  const [formData, setFormData] = useState({
+    name: '',
     description: '',
-    startDate: new Date().toISOString().split('T')[0], // Format YYYY-MM-DD
-    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // +30 dni
+    protocolId: '',
+    category: ''
   });
+  const [selectedProtocol, setSelectedProtocol] = useState<any>(null);
 
-  // Listy schematów
-  const [customSchemas, setCustomSchemas] = useState<ResearchSchema[]>([]);
-  const [predefinedSchemas, setPredefinedSchemas] = useState<ResearchSchema[]>([]); // Zaimportowane predefiniowane schematy
-  const [showPredefined, setShowPredefined] = useState(false);
+  const { createStudy, isLoading: createLoading, error: createError } = useStudies();
+  const {
+    protocols: predefinedProtocols,
+    protocol: protocolDetails,
+    isLoading: protocolsLoading,
+    error: protocolsError,
+    fetchPredefinedProtocols,
+    fetchPredefinedProtocol
+  } = usePredefinedProtocols();
 
   useEffect(() => {
-    fetchSchemas();
-  }, []);
+    fetchPredefinedProtocols();
+  }, [fetchPredefinedProtocols]);
 
-  const fetchSchemas = async () => {
-    try {
-      setLoading(true);
-      
-      // Pobierz wszystkie schematy z bazy danych (zawierają zaimportowane predefiniowane)
-      const allSchemasResponse = await researchSchemasApi.getAll();
-      if (allSchemasResponse.success) {
-        const allSchemas = allSchemasResponse.data || [];
-        
-        // Rozdziel na własne i predefiniowane na podstawie tytułów
-        const custom = allSchemas.filter(schema => 
-          !schema.title.startsWith('ISO ') && 
-          !schema.title.startsWith('ASTM ') && 
-          !schema.title.startsWith('Finat ') &&
-          !schema.title.startsWith('UL ')
-        );
-        
-        const imported = allSchemas.filter(schema => 
-          schema.title.startsWith('ISO ') || 
-          schema.title.startsWith('ASTM ') || 
-          schema.title.startsWith('Finat ') ||
-          schema.title.startsWith('UL ')
-        );
-        
-        setCustomSchemas(custom);
-        setPredefinedSchemas(imported);
-      }
-    } catch (error) {
-      console.error('Error fetching schemas:', error);
-      setError('Nie udało się pobrać schematów badawczych');
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (formData.protocolId) {
+      fetchPredefinedProtocol(formData.protocolId);
     }
-  };
+  }, [formData.protocolId, fetchPredefinedProtocol]);
 
-  const handleNext = () => {
-    if (activeStep === 0 && !selectedSchema) {
-      setError('Proszę wybrać schemat badawczy');
-      return;
+  useEffect(() => {
+    if (protocolDetails) {
+      setSelectedProtocol(protocolDetails);
     }
-    if (activeStep === 1 && !studyData.title.trim()) {
-      setError('Proszę podać tytuł badania');
-      return;
-    }
-    setError(null);
-    setActiveStep((prevStep) => prevStep + 1);
+  }, [protocolDetails]);
+
+  const handleChange = (field: string) => (event: any) => {
+    setFormData({
+      ...formData,
+      [field]: event.target.value
+    });
   };
 
-  const handleBack = () => {
-    setActiveStep((prevStep) => prevStep - 1);
-  };
-
-  const handleSchemaSelect = (schema: ResearchSchema) => {
-    setSelectedSchema(schema);
-    setError(null);
-  };
-
-  const handleCreateStudy = async () => {
-    if (!selectedSchema) {
-      setError('Nie wybrano schematu badawczego');
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    
+    if (!formData.name || !formData.protocolId) {
       return;
     }
 
-    try {
-      setLoading(true);
-      
-      const studyForm: CreateStudyForm = {
-        title: studyData.title,
-        description: studyData.description || undefined,
-        researchSchemaId: selectedSchema.id,
-        startDate: studyData.startDate || undefined,
-        endDate: studyData.endDate || undefined
-      };
+    const success = await createStudy({
+      name: formData.name,
+      description: formData.description,
+      protocolId: formData.protocolId,
+      category: formData.category || selectedProtocol?.category
+    });
 
-      const response = await studiesApi.create(studyForm);
-      
-      if (response.success) {
-        toast.success('Badanie zostało utworzone pomyślnie!');
-        navigate('/studies');
-      } else {
-        setError(response.error || 'Nie udało się utworzyć badania');
-      }
-    } catch (error: any) {
-      console.error('Error creating study:', error);
-      setError(error.response?.data?.error || 'Nie udało się utworzyć badania');
-    } finally {
-      setLoading(false);
+    if (success) {
+      navigate('/dashboard');
     }
   };
 
-  const renderStepContent = () => {
-    switch (activeStep) {
-      case 0:
-        return (
-          <Box>
-            <Typography variant="h6" gutterBottom>
-              Wybierz schemat badawczy
-            </Typography>
-            
-            {error && (
-              <Alert severity="error" sx={{ mb: 2 }}>
-                {error}
-              </Alert>
-            )}
+  const isFormValid = formData.name.trim() && formData.protocolId;
 
-            <Grid container spacing={3}>
-              {/* Własne schematy */}
-              <Grid item xs={12} md={6}>
-                <Paper sx={{ p: 2, height: '100%' }}>
-                  <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold' }}>
-                    Własne schematy ({customSchemas.length})
-                  </Typography>
-                  {customSchemas.length === 0 ? (
-                    <Typography color="text.secondary">
-                      Brak własnych schematów. 
-                      <Button 
-                        size="small" 
-                        onClick={() => navigate('/schemas/create')}
-                        sx={{ ml: 1 }}
-                      >
-                        Utwórz pierwszy
-                      </Button>
-                    </Typography>
-                  ) : (
-                    <List dense>
-                      {customSchemas.map((schema) => (
-                        <ListItem key={schema.id} disablePadding>
-                          <ListItemButton
-                            selected={selectedSchema?.id === schema.id}
-                            onClick={() => handleSchemaSelect(schema)}
-                          >
-                            <ListItemText
-                              primary={schema.title}
-                              secondary={`${schema.questions?.length || 0} pytań • ${schema.description?.substring(0, 50) || 'Brak opisu'}${schema.description && schema.description.length > 50 ? '...' : ''}`}
-                            />
-                          </ListItemButton>
-                        </ListItem>
-                      ))}
-                    </List>
-                  )}
-                </Paper>
-              </Grid>
+  if (protocolsLoading) {
+    return (
+      <Container>
+        <Box display="flex" justifyContent="center" mt={4}>
+          <CircularProgress />
+        </Box>
+      </Container>
+    );
+  }
 
-              {/* Predefiniowane schematy */}
-              <Grid item xs={12} md={6}>
-                <Paper sx={{ p: 2, height: '100%' }}>
-                  <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold' }}>
-                    Schematy predefiniowane ({predefinedSchemas.length})
-                  </Typography>
-                  {predefinedSchemas.length === 0 ? (
-                    <Typography color="text.secondary">
-                      Brak dostępnych schematów predefiniowanych.
-                    </Typography>
-                  ) : (
-                    <List dense>
-                      {predefinedSchemas.slice(0, 5).map((schema) => (
-                        <ListItem key={schema.id} disablePadding>
-                          <ListItemButton
-                            selected={selectedSchema?.id === schema.id}
-                            onClick={() => handleSchemaSelect(schema)}
-                          >
-                            <ListItemText
-                              primary={schema.title}
-                              secondary={`${schema.questions?.length || 0} pytań • ${schema.description?.substring(0, 50) || 'Brak opisu'}${schema.description && schema.description.length > 50 ? '...' : ''}`}
-                            />
-                          </ListItemButton>
-                        </ListItem>
-                      ))}
-                      {predefinedSchemas.length > 5 && (
-                        <ListItem>
-                          <Button 
-                            size="small" 
-                            onClick={() => setShowPredefined(true)}
-                            fullWidth
-                          >
-                            Zobacz wszystkie ({predefinedSchemas.length})
-                          </Button>
-                        </ListItem>
-                      )}
-                    </List>
-                  )}
-                </Paper>
-              </Grid>
-            </Grid>
-          </Box>
-        );
+  return (
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      <Box display="flex" alignItems="center" mb={4}>
+        <Button
+          startIcon={<ArrowBackIcon />}
+          onClick={() => navigate('/dashboard')}
+          sx={{ mr: 2 }}
+        >
+          Powrót
+        </Button>
+        <Typography variant="h4" component="h1">
+          Utwórz Nowe Badanie
+        </Typography>
+      </Box>
 
-      case 1:
-        return (
-          <Box>
-            <Typography variant="h6" gutterBottom>
-              Szczegóły badania
-            </Typography>
-            
-            {error && (
-              <Alert severity="error" sx={{ mb: 2 }}>
-                {error}
-              </Alert>
-            )}
+      {(createError || protocolsError) && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {createError || protocolsError}
+        </Alert>
+      )}
 
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
-                <TextField
-                  label="Tytuł badania"
-                  fullWidth
-                  required
-                  value={studyData.title}
-                  onChange={(e) => setStudyData({ ...studyData, title: e.target.value })}
-                  error={!studyData.title.trim() && error !== null}
-                  helperText={!studyData.title.trim() && error !== null ? 'Tytuł jest wymagany' : ''}
-                />
-              </Grid>
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Informacje o Badaniu
+              </Typography>
               
-              <Grid item xs={12}>
+              <Box component="form" onSubmit={handleSubmit}>
                 <TextField
-                  label="Opis badania"
                   fullWidth
+                  label="Nazwa badania"
+                  value={formData.name}
+                  onChange={handleChange('name')}
+                  required
+                  sx={{ mb: 2 }}
+                />
+
+                <TextField
+                  fullWidth
+                  label="Opis"
+                  value={formData.description}
+                  onChange={handleChange('description')}
                   multiline
                   rows={3}
-                  value={studyData.description}
-                  onChange={(e) => setStudyData({ ...studyData, description: e.target.value })}
-                  helperText="Opcjonalny opis badania dla uczestników"
+                  sx={{ mb: 2 }}
                 />
-              </Grid>
 
-              <Grid item xs={12} md={6}>
+                <FormControl fullWidth sx={{ mb: 2 }}>
+                  <InputLabel>Protokół badawczy *</InputLabel>
+                  <Select
+                    value={formData.protocolId}
+                    label="Protokół badawczy *"
+                    onChange={handleChange('protocolId')}
+                    required
+                  >
+                    {predefinedProtocols.map((protocol) => (
+                      <MenuItem key={protocol.id} value={protocol.id}>
+                        {protocol.title} - {protocol.standard}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
                 <TextField
-                  label="Data rozpoczęcia"
-                  type="date"
                   fullWidth
-                  value={studyData.startDate}
-                  onChange={(e) => setStudyData({ ...studyData, startDate: e.target.value })}
-                  InputLabelProps={{ shrink: true }}
+                  label="Kategoria"
+                  value={formData.category}
+                  onChange={handleChange('category')}
+                  placeholder={selectedProtocol?.category || ''}
+                  sx={{ mb: 3 }}
                 />
-              </Grid>
 
-              <Grid item xs={12} md={6}>
-                <TextField
-                  label="Data zakończenia"
-                  type="date"
-                  fullWidth
-                  value={studyData.endDate}
-                  onChange={(e) => setStudyData({ ...studyData, endDate: e.target.value })}
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Grid>
-            </Grid>
-          </Box>
-        );
+                <Box display="flex" gap={2}>
+                  <Button
+                    type="button"
+                    variant="outlined"
+                    onClick={() => navigate('/dashboard')}
+                  >
+                    Anuluj
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    disabled={!isFormValid || createLoading}
+                  >
+                    {createLoading ? <CircularProgress size={24} /> : 'Utwórz Badanie'}
+                  </Button>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
 
-      case 2:
-        return (
-          <Box>
-            <Typography variant="h6" gutterBottom>
-              Podsumowanie
-            </Typography>
-            
-            {error && (
-              <Alert severity="error" sx={{ mb: 2 }}>
-                {error}
-              </Alert>
-            )}
+        <Grid item xs={12} md={6}>
+          {selectedProtocol && (
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  Podgląd Protokołu
+                </Typography>
+                
+                <Typography variant="subtitle1" gutterBottom>
+                  {selectedProtocol.title}
+                </Typography>
+                
+                <Box display="flex" gap={1} mb={2}>
+                  <Chip label={selectedProtocol.standard} size="small" />
+                  <Chip label={selectedProtocol.category} variant="outlined" size="small" />
+                  <Chip label={selectedProtocol.difficulty} color="info" size="small" />
+                </Box>
 
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
-                <Card>
-                  <CardContent>
-                    <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold' }}>
-                      Szczegóły badania
+                <Typography variant="body2" color="textSecondary" paragraph>
+                  {selectedProtocol.description}
+                </Typography>
+
+                <Typography variant="body2" paragraph>
+                  <strong>Cel:</strong> {selectedProtocol.overview?.purpose}
+                </Typography>
+
+                <Typography variant="body2" paragraph>
+                  <strong>Szacowany czas:</strong> {selectedProtocol.estimatedDuration}
+                </Typography>
+
+                {selectedProtocol.equipment && selectedProtocol.equipment.length > 0 && (
+                  <Box>
+                    <Typography variant="body2" gutterBottom>
+                      <strong>Wymagane wyposażenie:</strong>
                     </Typography>
-                    <Typography><strong>Tytuł:</strong> {studyData.title}</Typography>
-                    {studyData.description && (
-                      <Typography><strong>Opis:</strong> {studyData.description}</Typography>
-                    )}
-                    <Typography><strong>Data rozpoczęcia:</strong> {studyData.startDate || 'Nie ustawiona'}</Typography>
-                    <Typography><strong>Data zakończenia:</strong> {studyData.endDate || 'Nie ustawiona'}</Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <Card>
-                  <CardContent>
-                    <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold' }}>
-                      Wybrany schemat
-                    </Typography>
-                    <Typography><strong>Nazwa:</strong> {selectedSchema?.title}</Typography>
-                    <Typography><strong>Pytania:</strong> {selectedSchema?.questions?.length || 0}</Typography>
-                    {selectedSchema?.description && (
-                      <Typography><strong>Opis:</strong> {selectedSchema.description}</Typography>
-                    )}
-                  </CardContent>
-                </Card>
-              </Grid>
-            </Grid>
-          </Box>
-        );
-
-      default:
-        return null;
-    }
-  };
-  return (
-    <Box>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Utwórz nowe badanie
-      </Typography>
-      
-      <Card>
-        <CardContent>
-          {/* Stepper */}
-          <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
-            {steps.map((label) => (
-              <Step key={label}>
-                <StepLabel>{label}</StepLabel>
-              </Step>
-            ))}
-          </Stepper>
-
-          {/* Zawartość kroków */}
-          {renderStepContent()}
-
-          {/* Przyciski nawigacji */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
-            <Button
-              onClick={handleBack}
-              disabled={activeStep === 0}
-              variant="outlined"
-            >
-              Wstecz
-            </Button>
-
-            <Box>
-              {activeStep === steps.length - 1 ? (
-                <Button
-                  onClick={handleCreateStudy}
-                  disabled={loading}
-                  variant="contained"
-                  size="large"
-                >
-                  {loading ? 'Tworzenie...' : 'Utwórz badanie'}
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleNext}
-                  variant="contained"
-                  disabled={loading}
-                >
-                  Dalej
-                </Button>
-              )}
-            </Box>
-          </Box>
-        </CardContent>
-      </Card>
-
-      {/* Dialog z pełną listą predefiniowanych schematów */}
-      <Dialog 
-        open={showPredefined} 
-        onClose={() => setShowPredefined(false)}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>Wybierz schemat predefiniowany</DialogTitle>
-        <DialogContent>
-          <List>
-            {predefinedSchemas.map((schema) => (
-              <ListItem key={schema.id} disablePadding>
-                <ListItemButton
-                  selected={selectedSchema?.id === schema.id}
-                  onClick={() => {
-                    handleSchemaSelect(schema);
-                    setShowPredefined(false);
-                  }}
-                >
-                  <ListItemText
-                    primary={schema.title}
-                    secondary={
-                      <Box>
-                        <Typography variant="body2" color="text.secondary">
-                          {schema.questions?.length || 0} pytań
-                        </Typography>
-                        {schema.description && (
-                          <Typography variant="body2" color="text.secondary">
-                            {schema.description}
+                    <ul style={{ margin: 0, paddingLeft: 20 }}>
+                      {selectedProtocol.equipment.slice(0, 3).map((item: any, index: number) => (
+                        <li key={index}>
+                          <Typography variant="body2" component="span">
+                            {item.name}
                           </Typography>
-                        )}
-                      </Box>
-                    }
-                  />
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowPredefined(false)}>Anuluj</Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+                        </li>
+                      ))}
+                      {selectedProtocol.equipment.length > 3 && (
+                        <li>
+                          <Typography variant="body2" component="span" color="textSecondary">
+                            ... i {selectedProtocol.equipment.length - 3} więcej
+                          </Typography>
+                        </li>
+                      )}
+                    </ul>
+                  </Box>
+                )}
+              </CardContent>
+            </Card>
+          )}
+        </Grid>
+      </Grid>
+    </Container>
   );
 };
 

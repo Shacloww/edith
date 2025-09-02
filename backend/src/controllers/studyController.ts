@@ -1,323 +1,300 @@
-import { Request, Response } from 'express';
-import { validationResult } from 'express-validator';
-import { PrismaClient } from '@prisma/client';
-import { 
-  RequestWithPrisma, 
-  CreateStudyDto, 
-  UpdateStudyDto, 
-  ApiResponse,
-  StudyStatus,
-  deserializeQuestions
-} from '../types';
+import { Response, NextFunction, Request } from 'express';
+import { CreateStudyDto, UpdateStudyDto, ApiResponse } from '../types';
+import { getProtocolById } from '../data/research-protocols';
 
-const prisma = new PrismaClient();
+/**
+ * Pobierz wszystkie badania
+ */
+export const getStudies = async (
+  req: Request,
+  res: Response<ApiResponse>,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const prisma = (req as any).prisma;
+    const studies = await prisma.study.findMany({
+      include: {
+        creator: {
+          select: { id: true, firstName: true, lastName: true, email: true }
+        },
+        sessions: {
+          select: { id: true, sessionName: true, status: true, createdAt: true }
+        },
+        _count: {
+          select: { sessions: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
 
-class StudyController {
-  // Pobierz wszystkie badania
-  async getAllStudies(req: Request, res: Response): Promise<void> {
-    try {
-      const studies = await prisma.study.findMany({
-        include: {
-          researchSchema: {
-            select: {
-              id: true,
-              title: true
+    res.status(200).json({
+      success: true,
+      data: studies
+    });
+  } catch (error) {
+    console.error('Error fetching studies:', error);
+    next(error);
+  }
+};
+
+/**
+ * Pobierz badanie po ID
+ */
+export const getStudyById = async (
+  req: Request,
+  res: Response<ApiResponse>,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const prisma = (req as any).prisma;
+    
+    const study = await prisma.study.findUnique({
+      where: { id },
+      include: {
+        creator: {
+          select: { id: true, firstName: true, lastName: true, email: true }
+        },
+        sessions: {
+          include: {
+            operator: {
+              select: { id: true, firstName: true, lastName: true, email: true }
+            },
+            samples: {
+              select: { id: true, sampleName: true, status: true }
+            },
+            _count: {
+              select: { results: true }
             }
+          }
+        },
+        dataCollectionPlan: {
+          include: {
+            dataPoints: true,
+            requiredConditions: true
           },
-          _count: {
-            select: {
-              responses: true
-            }
-          }
-        },
-        orderBy: {
-          createdAt: 'desc'
+          orderBy: { stepNumber: 'asc' }
         }
-      });
-
-      const response: ApiResponse = {
-        success: true,
-        data: studies
-      };
-
-      res.json(response);
-    } catch (error) {
-      console.error('Error fetching studies:', error);
-      const response: ApiResponse = {
-        success: false,
-        error: 'Nie udało się pobrać badań'
-      };
-      res.status(500).json(response);
-    }
-  }
-
-  // Pobierz pojedyncze badanie
-  async getStudyById(req: Request, res: Response): Promise<void> {
-    try {
-      const { id } = req.params;
-      
-      const study = await prisma.study.findUnique({
-        where: { id },
-        include: {
-          researchSchema: true,
-          responses: {
-            orderBy: {
-              createdAt: 'desc'
-            }
-          }
-        }
-      });
-
-      if (!study) {
-        const response: ApiResponse = {
-          success: false,
-          error: 'Badanie nie zostało znalezione'
-        };
-        res.status(404).json(response);
-        return;
       }
+    });
 
-      // Deserializuj questions w researchSchema
-      const studyWithDeserializedQuestions = {
+    if (!study) {
+      res.status(404).json({
+        success: false,
+        error: 'Study not found'
+      });
+      return;
+    }
+
+    // Dodaj informacje o protokole jeśli to predefiniowany protokół
+    let protocolData = null;
+    if (study.protocolId) {
+      protocolData = getProtocolById(study.protocolId);
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
         ...study,
-        researchSchema: study.researchSchema ? {
-          ...study.researchSchema,
-          questions: deserializeQuestions(study.researchSchema.questions)
-        } : null
-      };
-
-      const response: ApiResponse = {
-        success: true,
-        data: studyWithDeserializedQuestions
-      };
-
-      res.json(response);
-    } catch (error) {
-      console.error('Error fetching study:', error);
-      const response: ApiResponse = {
-        success: false,
-        error: 'Nie udało się pobrać badania'
-      };
-      res.status(500).json(response);
-    }
-  }
-
-  // Utwórz nowe badanie
-  async createStudy(req: Request, res: Response): Promise<void> {
-    try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        const response: ApiResponse = {
-          success: false,
-          error: 'Nieprawidłowe dane',
-          details: errors.array()
-        };
-        res.status(400).json(response);
-        return;
+        protocol: protocolData
       }
+    });
+  } catch (error) {
+    console.error('Error fetching study:', error);
+    next(error);
+  }
+};
 
-      const { title, description, researchSchemaId, startDate, endDate }: CreateStudyDto = req.body;
+/**
+ * Utwórz nowe badanie
+ */
+export const createStudy = async (
+  req: Request,
+  res: Response<ApiResponse>,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const data: CreateStudyDto = req.body;
+    const userId = 'temp-user-id'; // TODO: Pobierz z middleware auth
+    const prisma = (req as any).prisma;
 
-      // Sprawdź czy schemat badawczy istnieje
-      const researchSchema = await prisma.researchSchema.findUnique({
-        where: { id: researchSchemaId }
+    console.log('POST /api/studies - Request body:', data);
+
+    // Sprawdź czy protokół istnieje (predefiniowany)
+    const protocol = getProtocolById(data.protocolId);
+    if (!protocol) {
+      res.status(400).json({
+        success: false,
+        error: 'Protocol not found'
+      });
+      return;
+    }
+
+    // Przygotuj dane
+    const studyData = {
+      name: data.name,
+      description: data.description,
+      protocolId: data.protocolId,
+      protocolName: protocol.title,
+      category: data.category || protocol.category,
+      settings: data.settings || {},
+      parameters: data.parameters || [],
+      createdBy: userId
+    };
+
+    console.log('Extracted data:', studyData);
+
+    // Utwórz badanie w transakcji
+    const study = await prisma.$transaction(async (tx: any) => {
+      const newStudy = await tx.study.create({
+        data: studyData
       });
 
-      if (!researchSchema) {
-        const response: ApiResponse = {
-          success: false,
-          error: 'Schemat badawczy nie istnieje'
-        };
-        res.status(400).json(response);
-        return;
-      }
+      console.log('Created study:', newStudy);
 
-      const study = await prisma.study.create({
-        data: {
-          title,
-          description,
-          researchSchemaId,
-          startDate: startDate ? new Date(startDate) : null,
-          endDate: endDate ? new Date(endDate) : null
-        },
-        include: {
-          researchSchema: {
-            select: {
-              id: true,
-              title: true
+      // Utwórz plan zbierania danych na podstawie kroków protokołu
+      if (protocol.steps && protocol.steps.length > 0) {
+        await Promise.all(protocol.steps.map((step: any, index: number) => 
+          tx.studyDataCollectionStep.create({
+            data: {
+              studyId: newStudy.id,
+              stepNumber: index + 1,
+              protocolStepId: step.id,
+              stepName: step.title,
+              description: step.description,
+              estimatedDuration: step.duration,
+              isRequired: true,
+              executionNotes: step.instructions?.join('\n') || ''
             }
-          }
+          })
+        ));
+      }
+
+      return newStudy;
+    });
+
+    res.status(201).json({
+      success: true,
+      data: study,
+      message: 'Study created successfully'
+    });
+  } catch (error) {
+    console.error('Error creating study:', error);
+    next(error);
+  }
+};
+
+/**
+ * Zaktualizuj badanie
+ */
+export const updateStudy = async (
+  req: Request,
+  res: Response<ApiResponse>,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const data: UpdateStudyDto = req.body;
+    const userId = 'temp-user-id'; // TODO: Pobierz z middleware auth
+    const prisma = (req as any).prisma;
+
+    // Sprawdź czy badanie istnieje i czy user ma uprawnienia
+    const existingStudy = await prisma.study.findUnique({
+      where: { id },
+      select: { createdBy: true }
+    });
+
+    if (!existingStudy) {
+      res.status(404).json({
+        success: false,
+        error: 'Study not found'
+      });
+      return;
+    }
+
+    if (existingStudy.createdBy !== userId) {
+      res.status(403).json({
+        success: false,
+        error: 'Insufficient permissions'
+      });
+      return;
+    }
+
+    // Aktualizuj badanie
+    const updatedStudy = await prisma.study.update({
+      where: { id },
+      data: {
+        name: data.name,
+        description: data.description,
+        category: data.category,
+        status: data.status,
+        settings: data.settings,
+        parameters: data.parameters
+      },
+      include: {
+        creator: {
+          select: { id: true, firstName: true, lastName: true, email: true }
         }
-      });
+      }
+    });
 
-      const response: ApiResponse = {
-        success: true,
-        data: study,
-        message: 'Badanie zostało utworzone'
-      };
-
-      res.status(201).json(response);
-    } catch (error) {
-      console.error('Error creating study:', error);
-      const response: ApiResponse = {
-        success: false,
-        error: 'Nie udało się utworzyć badania'
-      };
-      res.status(500).json(response);
-    }
+    res.status(200).json({
+      success: true,
+      data: updatedStudy,
+      message: 'Study updated successfully'
+    });
+  } catch (error) {
+    console.error('Error updating study:', error);
+    next(error);
   }
+};
 
-  // Aktualizuj badanie
-  async updateStudy(req: Request, res: Response): Promise<void> {
-    try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        const response: ApiResponse = {
-          success: false,
-          error: 'Nieprawidłowe dane',
-          details: errors.array()
-        };
-        res.status(400).json(response);
-        return;
-      }
+/**
+ * Usuń badanie
+ */
+export const deleteStudy = async (
+  req: Request,
+  res: Response<ApiResponse>,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const userId = 'temp-user-id'; // TODO: Pobierz z middleware auth
+    const prisma = (req as any).prisma;
 
-      const { id } = req.params;
-      const { title, description, status, startDate, endDate }: UpdateStudyDto = req.body;
+    // Sprawdź czy badanie istnieje i czy user ma uprawnienia
+    const existingStudy = await prisma.study.findUnique({
+      where: { id },
+      select: { createdBy: true }
+    });
 
-      const updateData: any = {};
-      if (title !== undefined) updateData.title = title;
-      if (description !== undefined) updateData.description = description;
-      if (status !== undefined) updateData.status = status;
-      if (startDate !== undefined) updateData.startDate = startDate ? new Date(startDate) : null;
-      if (endDate !== undefined) updateData.endDate = endDate ? new Date(endDate) : null;
-
-      const study = await prisma.study.update({
-        where: { id },
-        data: updateData,
-        include: {
-          researchSchema: {
-            select: {
-              id: true,
-              title: true
-            }
-          }
-        }
-      });
-
-      const response: ApiResponse = {
-        success: true,
-        data: study,
-        message: 'Badanie zostało zaktualizowane'
-      };
-
-      res.json(response);
-    } catch (error: any) {
-      if (error.code === 'P2025') {
-        const response: ApiResponse = {
-          success: false,
-          error: 'Badanie nie zostało znalezione'
-        };
-        res.status(404).json(response);
-        return;
-      }
-
-      console.error('Error updating study:', error);
-      const response: ApiResponse = {
+    if (!existingStudy) {
+      res.status(404).json({
         success: false,
-        error: 'Nie udało się zaktualizować badania'
-      };
-      res.status(500).json(response);
-    }
-  }
-
-  // Usuń badanie
-  async deleteStudy(req: Request, res: Response): Promise<void> {
-    try {
-      const { id } = req.params;
-
-      await prisma.study.delete({
-        where: { id }
+        error: 'Study not found'
       });
-
-      const response: ApiResponse = {
-        success: true,
-        message: 'Badanie zostało usunięte'
-      };
-
-      res.json(response);
-    } catch (error: any) {
-      if (error.code === 'P2025') {
-        const response: ApiResponse = {
-          success: false,
-          error: 'Badanie nie zostało znalezione'
-        };
-        res.status(404).json(response);
-        return;
-      }
-
-      console.error('Error deleting study:', error);
-      const response: ApiResponse = {
-        success: false,
-        error: 'Nie udało się usunąć badania'
-      };
-      res.status(500).json(response);
+      return;
     }
-  }
 
-  // Zmień status badania
-  async updateStudyStatus(req: Request, res: Response): Promise<void> {
-    try {
-      const { id } = req.params;
-      const { status }: { status: StudyStatus } = req.body;
-
-      const validStatuses: StudyStatus[] = ['DRAFT', 'ACTIVE', 'COMPLETED', 'PAUSED'];
-      if (!validStatuses.includes(status)) {
-        const response: ApiResponse = {
-          success: false,
-          error: 'Nieprawidłowy status badania'
-        };
-        res.status(400).json(response);
-        return;
-      }
-
-      const study = await prisma.study.update({
-        where: { id },
-        data: { status },
-        include: {
-          researchSchema: {
-            select: {
-              id: true,
-              title: true
-            }
-          }
-        }
+    if (existingStudy.createdBy !== userId) {
+      res.status(403).json({
+        success: false,
+        error: 'Insufficient permissions'
       });
-
-      const response: ApiResponse = {
-        success: true,
-        data: study,
-        message: `Status badania został zmieniony na ${status}`
-      };
-
-      res.json(response);
-    } catch (error: any) {
-      if (error.code === 'P2025') {
-        const response: ApiResponse = {
-          success: false,
-          error: 'Badanie nie zostało znalezione'
-        };
-        res.status(404).json(response);
-        return;
-      }
-
-      console.error('Error updating study status:', error);
-      const response: ApiResponse = {
-        success: false,
-        error: 'Nie udało się zmienić statusu badania'
-      };
-      res.status(500).json(response);
+      return;
     }
-  }
-}
 
-export default new StudyController();
+    // Usuń badanie (kaskadowo usuną się powiązane dane)
+    await prisma.study.delete({
+      where: { id }
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Study deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting study:', error);
+    next(error);
+  }
+};

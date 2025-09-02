@@ -1,250 +1,373 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
-  CircularProgress,
-  Alert,
-  Button,
-  Tabs,
-  Tab,
+  Container,
+  Typography,
   Paper,
-  Typography
+  Alert,
+  CircularProgress,
+  Breadcrumbs,
+  Link,
+  Chip,
+  Grid,
+  Card,
+  CardContent,
+  Button,
+  IconButton,
+  Tooltip
 } from '@mui/material';
 import {
-  Analytics,
+  ArrowBack,
+  Download,
+  Print,
+  Share,
+  Refresh,
   Assessment,
   Timeline,
-  TableChart,
-  Refresh
+  BarChart,
+  ShowChart
 } from '@mui/icons-material';
-import { useStudyStatistics } from './hooks/useStudyStatistics';
-import { StatisticsHeader } from './components/StatisticsHeader';
-import { OverviewCards } from './components/OverviewCards';
-import { QuestionAnalysisComponent } from './components/QuestionAnalysisComponent';
+import { useParams, useNavigate } from 'react-router-dom';
+import { StatisticsOverview } from './components';
+import { Study, StudySession, StudyResult, StudyStatus } from '../../types';
 
-// Tab Panel Component
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
+interface StudyStatisticsProps {
+  studyId?: string;
 }
 
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`statistics-tabpanel-${index}`}
-      aria-labelledby={`statistics-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-    </div>
-  );
+interface StudyData {
+  study: Study;
+  sessions: StudySession[];
+  results: StudyResult[];
+  status: StudyStatus;
 }
 
-const StudyStatistics: React.FC = () => {
-  const { id: studyId } = useParams<{ id: string }>();
+const StudyStatistics: React.FC<StudyStatisticsProps> = ({ studyId: propStudyId }) => {
+  const { studyId: paramStudyId } = useParams<{ studyId: string }>();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState(0);
+  const studyId = propStudyId || paramStudyId;
 
-  const {
-    study,
-    responses,
-    statisticsData,
-    questionAnalyses,
-    correlations,
-    loading,
-    error,
-    refreshData,
-    exportData
-  } = useStudyStatistics(studyId || '');
+  const [studyData, setStudyData] = useState<StudyData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('overview');
 
-  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-    setActiveTab(newValue);
+  useEffect(() => {
+    if (studyId) {
+      loadStudyData();
+    }
+  }, [studyId]);
+
+  const loadStudyData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // W rzeczywistej aplikacji tutaj byłoby API call
+      // const response = await api.get(`/studies/${studyId}/statistics`);
+      // setStudyData(response.data);
+
+      // Tymczasowe dane demonstracyjne
+      const mockStudyData: StudyData = {
+        study: {
+          id: studyId!,
+          title: 'Badanie Wytrzymałości Materiału XYZ',
+          name: 'Badanie Wytrzymałości Materiału XYZ',
+          description: 'Kompleksowe badanie właściwości mechanicznych nowego materiału kompozytowego',
+          protocolId: 'protocol-123',
+          createdAt: '2024-01-15T00:00:00Z',
+          updatedAt: '2024-01-20T00:00:00Z',
+          createdBy: 'Jan Kowalski',
+          status: StudyStatus.COMPLETED
+        },
+        sessions: [
+          {
+            id: 'session-1',
+            studyId: studyId!,
+            sampleId: 'Próbka A1',
+            operator: 'Maria Nowak',
+            equipment: 'Maszyna Wytrzymałościowa MTS-100',
+            startTime: new Date('2024-01-15T09:00:00'),
+            endTime: new Date('2024-01-15T09:30:00'),
+            data: {
+              maxForce: 15420,
+              tensileStrength: 245.8,
+              yieldStrength: 198.2,
+              elongation: 12.5,
+              modulusOfElasticity: 68500
+            },
+            conditions: {
+              temperature: 23.2,
+              humidity: 45.8,
+              pressure: 1013.25
+            }
+          },
+          {
+            id: 'session-2',
+            studyId: studyId!,
+            sampleId: 'Próbka A2',
+            operator: 'Maria Nowak',
+            equipment: 'Maszyna Wytrzymałościowa MTS-100',
+            startTime: new Date('2024-01-15T10:00:00'),
+            endTime: new Date('2024-01-15T10:30:00'),
+            data: {
+              maxForce: 15890,
+              tensileStrength: 251.2,
+              yieldStrength: 201.5,
+              elongation: 13.1,
+              modulusOfElasticity: 69200
+            },
+            conditions: {
+              temperature: 23.5,
+              humidity: 46.2,
+              pressure: 1013.18
+            }
+          },
+          {
+            id: 'session-3',
+            studyId: studyId!,
+            sampleId: 'Próbka A3',
+            operator: 'Piotr Wiśniewski',
+            equipment: 'Maszyna Wytrzymałościowa MTS-100',
+            startTime: new Date('2024-01-16T09:00:00'),
+            endTime: new Date('2024-01-16T09:30:00'),
+            data: {
+              maxForce: 15210,
+              tensileStrength: 240.5,
+              yieldStrength: 195.8,
+              elongation: 12.2,
+              modulusOfElasticity: 67800
+            },
+            conditions: {
+              temperature: 22.8,
+              humidity: 44.5,
+              pressure: 1013.42
+            }
+          }
+        ],
+        results: [],
+        status: StudyStatus.COMPLETED
+      };
+
+      setStudyData(mockStudyData);
+    } catch (err) {
+      setError('Błąd podczas ładowania danych badania');
+      console.error('Error loading study data:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleBack = () => {
-    navigate(`/studies/${studyId}`);
+  const handleExport = () => {
+    // Implementacja eksportu danych
+    console.log('Eksport danych...');
   };
 
-  const handleExport = (format: 'csv' | 'xlsx' | 'pdf') => {
-    exportData(format);
+  const handlePrint = () => {
+    // Implementacja drukowania
+    window.print();
   };
 
-  // Loading state
+  const handleShare = () => {
+    // Implementacja udostępniania
+    console.log('Udostępnianie raportu...');
+  };
+
+  const getStatusColor = (status: StudyStatus) => {
+    switch (status) {
+      case StudyStatus.COMPLETED:
+        return 'success';
+      case StudyStatus.ACTIVE:
+        return 'primary';
+      case StudyStatus.DRAFT:
+        return 'default';
+      case StudyStatus.PAUSED:
+        return 'error';
+      default:
+        return 'default';
+    }
+  };
+
+  const getStatusLabel = (status: StudyStatus) => {
+    switch (status) {
+      case StudyStatus.COMPLETED:
+        return 'Zakończone';
+      case StudyStatus.ACTIVE:
+        return 'W trakcie';
+      case StudyStatus.DRAFT:
+        return 'Projekt';
+      case StudyStatus.PAUSED:
+        return 'Wstrzymane';
+      default:
+        return 'Nieznany';
+    }
+  };
+
   if (loading) {
     return (
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '60vh',
-          flexDirection: 'column',
-          gap: 2
-        }}
-      >
-        <CircularProgress size={60} color="primary" />
-        <Typography variant="h6" color="text.secondary">
-          Analizowanie danych statystycznych...
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          To może potrwać kilka sekund
-        </Typography>
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <CircularProgress />
       </Box>
     );
   }
 
-  // Error state
   if (error) {
     return (
-      <Box sx={{ maxWidth: 1200, mx: 'auto', p: 3 }}>
-        <Alert severity="error" sx={{ mb: 3 }}>
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
-        <Button 
-          onClick={refreshData} 
-          variant="contained" 
-          startIcon={<Refresh />}
-        >
+        <Button variant="outlined" onClick={loadStudyData} startIcon={<Refresh />}>
           Spróbuj ponownie
         </Button>
-      </Box>
+      </Container>
     );
   }
 
-  // No study found
-  if (!study) {
+  if (!studyData) {
     return (
-      <Box sx={{ maxWidth: 1200, mx: 'auto', p: 3 }}>
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Alert severity="warning">
-          Nie znaleziono badania o podanym identyfikatorze.
+          Nie znaleziono danych badania
         </Alert>
-      </Box>
+      </Container>
     );
   }
-
-  const questionsCount = study.researchSchema?.questions?.length || 0;
-  const hasResponses = responses.length > 0;
 
   return (
-    <Box sx={{ maxWidth: 1400, mx: 'auto', p: 3 }}>
+    <Container maxWidth="xl" sx={{ mt: 2, mb: 4 }}>
+      {/* Breadcrumbs */}
+      <Breadcrumbs sx={{ mb: 2 }}>
+        <Link
+          component="button"
+          variant="body1"
+          onClick={() => navigate('/studies')}
+          sx={{ display: 'flex', alignItems: 'center' }}
+        >
+          Badania
+        </Link>
+        <Link
+          component="button"
+          variant="body1"
+          onClick={() => navigate(`/studies/${studyId}`)}
+        >
+          {studyData.study.name}
+        </Link>
+        <Typography color="text.primary">Statystyki</Typography>
+      </Breadcrumbs>
+
       {/* Header */}
-      <StatisticsHeader
-        study={study}
-        onBack={handleBack}
-        onRefresh={refreshData}
-        onExport={handleExport}
-        loading={loading}
-      />
-
-      {/* Overview Cards */}
-      {statisticsData && (
-        <OverviewCards
-          data={statisticsData}
-          questionsCount={questionsCount}
-        />
-      )}
-
-      {/* Main Content */}
-      {hasResponses ? (
-        <Paper sx={{ width: '100%' }}>
-          <Tabs
-            value={activeTab}
-            onChange={handleTabChange}
-            indicatorColor="primary"
-            textColor="primary"
-            variant="fullWidth"
-            sx={{ borderBottom: 1, borderColor: 'divider' }}
-          >
-            <Tab 
-              icon={<Analytics />} 
-              label="Analiza pytań" 
-              iconPosition="start"
-            />
-            <Tab 
-              icon={<Assessment />} 
-              label="Korelacje" 
-              iconPosition="start"
-            />
-            <Tab 
-              icon={<Timeline />} 
-              label="Trendy czasowe" 
-              iconPosition="start"
-            />
-            <Tab 
-              icon={<TableChart />} 
-              label="Raport szczegółowy" 
-              iconPosition="start"
-            />
-          </Tabs>
-
-          {/* Panel 1: Analiza pytań */}
-          <TabPanel value={activeTab} index={0}>
-            <QuestionAnalysisComponent analyses={questionAnalyses} />
-          </TabPanel>
-
-          {/* Panel 2: Korelacje */}
-          <TabPanel value={activeTab} index={1}>
-            <Typography variant="h6" gutterBottom>
-              Analiza korelacji między pytaniami
+      <Paper sx={{ p: 3, mb: 3 }}>
+        <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
+          <Box>
+            <Box display="flex" alignItems="center" gap={2} mb={1}>
+              <IconButton
+                onClick={() => navigate(`/studies/${studyId}`)}
+                sx={{ mr: 1 }}
+              >
+                <ArrowBack />
+              </IconButton>
+              <Typography variant="h4" component="h1">
+                Analiza Statystyczna
+              </Typography>
+              <Chip
+                label={getStatusLabel(studyData.status)}
+                color={getStatusColor(studyData.status)}
+                size="small"
+              />
+            </Box>
+            <Typography variant="h6" color="text.secondary" gutterBottom>
+              {studyData.study.name}
             </Typography>
-            {correlations.length > 0 ? (
-              <Alert severity="info">
-                Znaleziono {correlations.length} korelacji. 
-                Szczegółowa analiza korelacji będzie dostępna wkrótce.
-              </Alert>
-            ) : (
-              <Alert severity="info">
-                Brak wystarczających danych numerycznych do analizy korelacji.
-              </Alert>
-            )}
-          </TabPanel>
-
-          {/* Panel 3: Trendy czasowe */}
-          <TabPanel value={activeTab} index={2}>
-            <Typography variant="h6" gutterBottom>
-              Analiza trendów czasowych
+            <Typography variant="body2" color="text.secondary">
+              {studyData.study.description}
             </Typography>
-            <Alert severity="info">
-              Wykresy trendów czasowych będą dostępne wkrótce.
-            </Alert>
-          </TabPanel>
-
-          {/* Panel 4: Raport szczegółowy */}
-          <TabPanel value={activeTab} index={3}>
-            <Typography variant="h6" gutterBottom>
-              Raport szczegółowy
-            </Typography>
-            <Alert severity="info">
-              Szczegółowy raport statystyczny będzie dostępny wkrótce.
-            </Alert>
-          </TabPanel>
-        </Paper>
-      ) : (
-        // No responses message
-        <Alert severity="info" sx={{ mt: 4 }}>
-          <Typography variant="h6" gutterBottom>
-            Brak odpowiedzi w badaniu
-          </Typography>
-          <Typography>
-            To badanie nie otrzymało jeszcze żadnych odpowiedzi. 
-            Statystyki będą dostępne po otrzymaniu pierwszych odpowiedzi od uczestników.
-          </Typography>
-          <Box sx={{ mt: 2 }}>
-            <Button 
-              onClick={refreshData}
-              variant="outlined"
-              startIcon={<Refresh />}
-            >
-              Sprawdź ponownie
-            </Button>
           </Box>
-        </Alert>
-      )}
-    </Box>
+          <Box display="flex" gap={1}>
+            <Tooltip title="Odśwież dane">
+              <IconButton onClick={loadStudyData}>
+                <Refresh />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Eksportuj raport">
+              <IconButton onClick={handleExport}>
+                <Download />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Drukuj">
+              <IconButton onClick={handlePrint}>
+                <Print />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Udostępnij">
+              <IconButton onClick={handleShare}>
+                <Share />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        </Box>
+
+        {/* Quick Stats */}
+        <Grid container spacing={3}>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card variant="outlined">
+              <CardContent sx={{ textAlign: 'center' }}>
+                <Assessment color="primary" sx={{ fontSize: 40, mb: 1 }} />
+                <Typography variant="h6">{studyData.sessions.length}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Liczba sesji
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card variant="outlined">
+              <CardContent sx={{ textAlign: 'center' }}>
+                <Timeline color="secondary" sx={{ fontSize: 40, mb: 1 }} />
+                <Typography variant="h6">
+                  {Math.round((new Date(studyData.study.updatedAt).getTime() - 
+                    new Date(studyData.study.createdAt).getTime()) / (1000 * 60 * 60 * 24))} dni
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Czas trwania
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card variant="outlined">
+              <CardContent sx={{ textAlign: 'center' }}>
+                <BarChart color="success" sx={{ fontSize: 40, mb: 1 }} />
+                <Typography variant="h6">
+                  {Object.keys(studyData.sessions[0]?.data || {}).length}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Parametry
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card variant="outlined">
+              <CardContent sx={{ textAlign: 'center' }}>
+                <ShowChart color="info" sx={{ fontSize: 40, mb: 1 }} />
+                <Typography variant="h6">100%</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Kompletność danych
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+      </Paper>
+
+      {/* Statistics Overview */}
+      <StatisticsOverview 
+        studyId={studyData.study.id}
+        studyName={studyData.study.name || (studyData.study as any).title || 'Badanie'}
+        data={studyData.sessions}
+      />
+    </Container>
   );
 };
 

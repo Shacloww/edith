@@ -5,17 +5,11 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { Toaster } from 'react-hot-toast';
 
 import Layout from './components/Layout/Layout';
-import Dashboard from './pages/Dashboard';
-import ResearchSchemas from './pages/ResearchSchemas';
-import CreateResearchSchema from './pages/CreateResearchSchema';
-import EditResearchSchema from './pages/EditResearchSchema';
-import PredefinedSchemas from './pages/PredefinedSchemas';
-import Studies from './pages/Studies';
-import CreateStudy from './pages/CreateStudy';
-import EditStudy from './pages/EditStudy';
-import StudyDetails from './pages/StudyDetails';
-import TakeSurvey from './pages/TakeSurvey';
+import { Dashboard } from './pages/Dashboard';
+import PredefinedProtocols from './pages/PredefinedProtocols';
+import { StudyList, CreateStudy, EditStudy, ExecuteStudy } from './pages/Studies';
 import StudyStatistics from './pages/StudyStatistics';
+import ProtocolCreator from './pages/ProtocolCreator';
 import NotFound from './pages/NotFound';
 
 // Tema Material-UI
@@ -70,21 +64,21 @@ const App: React.FC = () => {
             {/* Dashboard */}
             <Route path="/" element={<Dashboard />} />
             
-            {/* Research Schemas */}
-            <Route path="/schemas" element={<ResearchSchemas />} />
-            <Route path="/schemas/create" element={<CreateResearchSchema />} />
-            <Route path="/schemas/:id/edit" element={<EditResearchSchema />} />
-            <Route path="/schemas/predefined" element={<PredefinedSchemas />} />
+
+            
+            {/* Predefined Protocols */}
+            <Route path="/protocols/predefined" element={<PredefinedProtocols />} />
+            
+            {/* Protocol Creator */}
+            <Route path="/protocol-creator" element={<ProtocolCreator />} />
+            <Route path="/create-protocol" element={<ProtocolCreator />} />
             
             {/* Studies */}
-            <Route path="/studies" element={<Studies />} />
+            <Route path="/studies" element={<StudyList />} />
             <Route path="/studies/create" element={<CreateStudy />} />
-            <Route path="/studies/:id" element={<StudyDetails />} />
+            <Route path="/studies/:studyId/execute" element={<ExecuteStudy />} />
             <Route path="/studies/:id/edit" element={<EditStudy />} />
             <Route path="/studies/:id/statistics" element={<StudyStatistics />} />
-            
-            {/* Survey Taking */}
-            <Route path="/survey/:studyId" element={<TakeSurvey />} />
             
             {/* 404 */}
             <Route path="*" element={<NotFound />} />

@@ -3,13 +3,10 @@ import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
-import { RequestWithPrisma } from './types';
 
 // Import routes
-import researchSchemasRoutes from './routes/researchSchemas';
 import studiesRoutes from './routes/studies';
-import responsesRoutes from './routes/responses';
-import predefinedSchemasRoutes from './routes/predefinedSchemas';
+import predefinedProtocolsRoutes from './routes/predefinedProtocols';
 import protocolsRoutes from './routes/protocols';
 
 // Load environment variables
@@ -44,10 +41,8 @@ app.get('/health', (req: Request, res: Response) => {
 });
 
 // API Routes
-app.use('/api/research-schemas', researchSchemasRoutes);
 app.use('/api/studies', studiesRoutes);
-app.use('/api/responses', responsesRoutes);
-app.use('/api/predefined-schemas', predefinedSchemasRoutes);
+app.use('/api/predefined-protocols', predefinedProtocolsRoutes);
 app.use('/api/protocols', protocolsRoutes);
 
 // Error handling middleware

@@ -8,75 +8,147 @@ export enum StudyStatus {
   PAUSED = 'PAUSED'
 }
 
-export enum QuestionType {
-  SINGLE_CHOICE = 'SINGLE_CHOICE',
-  MULTIPLE_CHOICE = 'MULTIPLE_CHOICE', 
-  TEXT = 'TEXT',
-  NUMBER = 'NUMBER',
-  SCALE = 'SCALE',
-  DATE = 'DATE'
+// Types for protocol-based research studies
+export interface StudySession {
+  id: string;
+  studyId: string;
+  studyTemplateId?: string;
+  sampleId?: string;
+  operator?: string;
+  equipment?: string;
+  startTime: Date;
+  endTime?: Date;
+  data: Record<string, number>;
+  conditions?: Record<string, any>;
+  notes?: string;
+  status?: string;
+  progress?: Record<string, any>;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-// Interfaces dla pytań
-export interface QuestionOption {
+export interface StudyResult {
+  id: string;
+  studyId: string;
+  sessionId: string;
+  parameters: Record<string, number>;
+  calculatedValues?: Record<string, number>;
+  quality?: 'pass' | 'fail' | 'warning';
+  notes?: string;
+  createdAt: Date;
+}
+
+// Advanced study template types for complex study creation
+export interface DataPoint {
+  id: string;
+  name: string;
+  description: string;
+  parameterType: 'measurement' | 'observation' | 'calculation' | 'condition';
+  dataType: 'number' | 'text' | 'boolean' | 'date';
+  unit?: string;
+  isRequired: boolean;
+  isCalculated: boolean;
+  calculationFormula?: string;
+  validation?: {
+    min?: number;
+    max?: number;
+    pattern?: string;
+    required?: boolean;
+  };
+  validationRules?: {
+    min?: number;
+    max?: number;
+    pattern?: string;
+    required?: boolean;
+  };
+}
+
+export interface DataCollectionStep {
+  id: string;
+  stepNumber?: number;
+  name: string;
+  stepName?: string; // alias for name
+  description: string;
+  estimatedDuration: string;
+  isRequired: boolean;
+  dataPoints: DataPoint[];
+  instructions?: string[];
+  safety?: string[];
+}
+
+export interface StudyParameter {
+  id: string;
+  name: string;
   value: string;
-  label: string;
-}
-
-export interface QuestionValidation {
-  min?: number;
-  max?: number;
-  minLabel?: string;
-  maxLabel?: string;
-  pattern?: string;
-  required?: boolean;
-}
-
-export interface Question {
-  id: string;
-  title: string;
-  type: QuestionType;
-  required: boolean;
+  unit?: string;
   description?: string;
-  placeholder?: string;
-  options?: (string | QuestionOption)[];
-  validation?: QuestionValidation;
 }
 
-// Interfaces dla modeli
-export interface ResearchSchema {
-  id: string;
-  title: string;
+export interface StudySettings {
+  sampleSettings: {
+    minSamples: number;
+    maxSamples: number;
+    defaultSamples: number;
+    sampleNaming: 'automatic' | 'manual';
+    samplePrefix?: string;
+  };
+  repetitionSettings: {
+    allowRepetitions: boolean;
+    maxRepetitions: number;
+    repetitionNaming: 'automatic' | 'manual';
+  };
+  validationSettings: {
+    requireAllSteps: boolean;
+    allowSkippingOptional: boolean;
+    requireApproval: boolean;
+  };
+  exportSettings: {
+    autoExport: boolean;
+    exportFormat: 'xlsx' | 'csv' | 'json';
+    includeCalculations: boolean;
+    includeCharts: boolean;
+  };
+}
+
+export interface StudyTemplate {
+  id?: string;
+  name: string;
   description?: string;
-  questions: Question[];
-  createdAt: string;
-  updatedAt: string;
-  studies?: Study[];
+  protocolId: string;
+  protocolName?: string;
+  category?: string;
+  dataCollectionPlan: DataCollectionStep[];
+  parameters: StudyParameter[];
+  settings: StudySettings;
+  status: 'draft' | 'active' | 'completed' | 'paused';
+  createdAt?: string;
+  updatedAt?: string;
+  createdBy?: string;
 }
 
 export interface Study {
   id: string;
-  title: string;
+  name: string;
+  title?: string; // Backward compatibility
   description?: string;
-  researchSchemaId: string;
+  protocolId: string;
+  protocolName?: string; // Cache field
+  category?: string;
   status: StudyStatus;
+  settings?: Record<string, any>;
+  parameters?: Record<string, any>;
   startDate?: string;
   endDate?: string;
   createdAt: string;
   updatedAt: string;
-  researchSchema?: ResearchSchema;
-  responses?: Response[];
+  createdBy?: string;
+  isTemplate?: boolean;
+  sessions?: StudySession[];
+  results?: StudyResult[];
   _count?: {
-    responses: number;
+    sessions?: number;
+    results?: number;
   };
-}
-
-export interface Response {
-  id: string;
-  studyId: string;
-  answers: Record<string, any>;
-  createdAt: string;
-  study?: Study;
 }
 
 // API Response types
@@ -89,82 +161,30 @@ export interface ApiResponse<T = any> {
 }
 
 // Form data types
-export interface CreateResearchSchemaForm {
-  title: string;
-  description?: string;
-  questions: Question[];
-}
-
-export interface UpdateResearchSchemaForm {
-  title?: string;
-  description?: string;
-  questions?: Question[];
-}
-
 export interface CreateStudyForm {
-  title: string;
+  name: string;
   description?: string;
-  researchSchemaId: string;
-  startDate?: string;
-  endDate?: string;
+  protocolId: string;
+  category?: string;
+  settings?: Record<string, any>;
+  parameters?: Record<string, any>;
 }
 
 export interface UpdateStudyForm {
-  title?: string;
+  name?: string;
   description?: string;
   status?: StudyStatus;
-  startDate?: string;
-  endDate?: string;
-}
-
-export interface SubmitResponseForm {
-  studyId: string;
-  answers: Record<string, any>;
-}
-
-// Statistics types
-export interface QuestionStatistics {
-  title: string;
-  type: QuestionType;
-  totalAnswers: number;
-  responseRate: string;
-  averageLength?: string;
-  min?: number;
-  max?: number;
-  average?: string;
-  distribution?: Record<string, number>;
-}
-
-export interface StudyStatistics {
-  totalResponses: number;
-  questionStats: Record<string, QuestionStatistics>;
+  category?: string;
+  settings?: Record<string, any>;
+  parameters?: Record<string, any>;
 }
 
 // Component props types
-export interface QuestionBuilderProps {
-  question: Question;
-  onChange: (question: Question) => void;
-  onDelete: () => void;
-}
-
-export interface QuestionRendererProps {
-  question: Question;
-  value: any;
-  onChange: (value: any) => void;
-  error?: string;
-}
-
 export interface StudyCardProps {
   study: Study;
   onEdit?: (study: Study) => void;
   onDelete?: (studyId: string) => void;
   onStatusChange?: (studyId: string, status: StudyStatus) => void;
-}
-
-export interface ResearchSchemaCardProps {
-  schema: ResearchSchema;
-  onEdit?: (schema: ResearchSchema) => void;
-  onDelete?: (schemaId: string) => void;
 }
 
 // Navigation types
@@ -197,4 +217,18 @@ export interface PaginationInfo {
 export interface PaginatedResponse<T> {
   data: T[];
   pagination: PaginationInfo;
+}
+
+export interface SampleData {
+  id: string;
+  name?: string;
+  studyTemplateId?: string;
+  sampleNumber: number;
+  sampleName: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'failed';
+  data: Record<string, any>;
+  measurements: Record<string, any>;
+  startTime?: string;
+  endTime?: string;
+  notes: string;
 }

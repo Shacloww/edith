@@ -1,248 +1,307 @@
-/**
- * ISO 1133-1:2011 - Plastics — Determination of the melt mass-flow rate (MFR) and melt volume-flow rate (MVR) of thermoplastics
- * Protokół badania wskaźnika płynięcia termoplastów
- */
-
-export const ISO1133Protocol = {
-  id: 'iso-1133-mfr',
-  title: 'ISO 1133 - Wskaźnik płynięcia termoplastów (MFR/MVR)',
-  version: '2011',
-  category: 'rheology',
-  description: 'Oznaczanie wskaźnika płynięcia masy (MFR) i objętości (MVR) termoplastów',
+export const iso1133Protocol = {
+  id: 'iso-1133',
+  title: 'ISO 1133 - Wskaźnik Płynięcia Stopów (MFR/MVR)',
+  description: 'Kompleksowy protokół do określania wskaźnika płynięcia stopów (MFR) i wskaźnika objętości stopów (MVR) termoplastycznych materiałów polimerowych.',
+  category: 'Reologiczne',
+  estimatedDuration: '30-45 minut na próbkę',
+  difficulty: 'Średniozaawansowany',
   
-  equipment: {
-    required: [
-      'Plastometr do badania wskaźnika płynięcia zgodny z ISO 1133',
-      'Waga analityczna (dokładność ±0,001 g)',
-      'Suszarka lub piec do kondycjonowania próbek',
-      'Narzędzia do cięcia próbek',
-      'Sekundomierz lub timer cyfrowy'
-    ],
-    optional: [
-      'Mieszadło do homogenizacji materiału',
-      'Forma do przygotowania próbek',
-      'Mikrometr do pomiaru grubości'
-    ]
+  overview: {
+    purpose: 'Określenie wskaźnika płynięcia stopów jako miary lepkości stopu polimeru przy określonej temperaturze i obciążeniu.',
+    scope: 'Stosowane do termoplastycznych materiałów polimerowych w formie granulek, proszku lub gotowych wyrobów.',
+    principles: 'Polimer jest ogrzewany w cylindrze do określonej temperatury, obciążany standardowym ciężarem i wytłaczany przez standardową dyszę.',
+    standards: ['ISO 1133-1:2011', 'ISO 1133-2:2011', 'ASTM D1238']
   },
 
+  equipment: [
+    { name: 'Plastometr Ekstruzyjny', specification: 'Zgodny z ISO 1133, kontrola temperatury ±0.5°C' },
+    { name: 'Ciężary Standardowe', specification: 'Komplet ciężarów od 0.325 kg do 21.6 kg' },
+    { name: 'Dysza Standardowa', specification: 'Średnica 2.095±0.005mm, długość 8.000±0.025mm' },
+    { name: 'Tłok', specification: 'Średnica 9.475±0.007mm, masa 484±2g' },
+    { name: 'Cylinder', specification: 'Średnica wewnętrzna 9.550±0.025mm' },
+    { name: 'Waga Analityczna', specification: 'Dokładność ±0.1mg' },
+    { name: 'Stoper', specification: 'Dokładność ±0.1s' },
+    { name: 'Narzędzie do Cięcia', specification: 'Ostre ostrze lub nożyczki' }
+  ],
+
+  materials: [
+    'Próbka polimeru (4-8g)',
+    'Gaze lub tkanina do czyszczenia',
+    'Rozpuszczalnik do czyszczenia (jeśli wymagany)',
+    'Rękawice termoodporne',
+    'Pojemnik na ekstrudowany materiał'
+  ],
+
+  safetyGuidelines: [
+    'Noś rękawice termoodporne przy pracy z gorącym sprzętem',
+    'Uważaj na gorące powierzchnie - temperatura może osiągać 300°C',
+    'Używaj okularów ochronnych podczas czyszczenia sprzętu',
+    'Upewnij się o właściwej wentylacji pomieszczenia',
+    'Nie dotykaj bezpośrednio ekstrudowanego materiału'
+  ],
+
   testConditions: {
-    temperature: {
-      ranges: [
-        { material: 'PE', temperature: '190°C', load: '2.16 kg' },
-        { material: 'PP', temperature: '230°C', load: '2.16 kg' },
-        { material: 'PS', temperature: '200°C', load: '5.0 kg' },
-        { material: 'ABS', temperature: '220°C', load: '10.0 kg' },
-        { material: 'PC', temperature: '300°C', load: '1.2 kg' },
-        { material: 'POM', temperature: '190°C', load: '2.16 kg' }
-      ]
-    },
-    loads: ['0.325 kg', '1.2 kg', '2.16 kg', '3.8 kg', '5.0 kg', '10.0 kg', '21.6 kg'],
-    preheatingTime: '300 ± 30 sekund',
-    cuttingInterval: '10 ± 0.1 sekund lub 30 ± 0.1 sekund'
+    temperature: 'Zgodnie z normą dla materiału (np. 190°C dla PE, 230°C dla PP)',
+    load: 'Standardowe obciążenia: 2.16kg, 5kg, 10kg, 21.6kg',
+    preheating: '5-7 minut przed rozpoczęciem testu',
+    testDuration: 'Określone przez normę (zazwyczaj 10 minut)',
+    environment: 'Standardowa atmosfera laboratoryjna'
   },
 
   steps: [
     {
-      id: 'preparation',
-      title: 'Przygotowanie próbki',
-      duration: '15-30 minut',
-      instructions: [
-        '1. **Wybór próbki**: Pobierz reprezentatywną próbkę materiału (minimum 5-8 g)',
-        '2. **Kondycjonowanie**: Wysusz próbkę zgodnie z wymaganiami materiału:',
-        '   - PE/PP: 80°C przez 4 godziny',
-        '   - PS: 80°C przez 2 godziny', 
-        '   - ABS: 80°C przez 2-4 godziny',
-        '   - PC: 120°C przez 4 godziny',
-        '3. **Homogenizacja**: Wymieszaj materiał aby zapewnić jednorodność',
-        '4. **Kontrola**: Sprawdź czy próbka nie zawiera zanieczyszczeń lub defektów'
-      ],
-      safety: [
-        'Używaj rękawic ochronnych podczas pracy z gorącym materiałem',
-        'Zapewnij odpowiednią wentylację w pomieszczeniu',
-        'Uważaj na ostre krawędzie podczas cięcia próbek'
-      ],
-      tips: [
-        'Próbka powinna być sucha - wilgoć może wpłynąć na wyniki',
-        'Unikaj próbek z widocznymi defektami lub zanieczyszczeniami',
-        'Przechowuj przygotowane próbki w suchym miejscu'
-      ]
-    },
-    {
-      id: 'apparatus-setup',
-      title: 'Przygotowanie aparatury',
-      duration: '20-30 minut',
-      instructions: [
-        '1. **Czyszczenie**: Dokładnie wyczyść cylinder i tłok plastometru',
-        '2. **Montaż**: Zamontuj odpowiednią dyszę (średnica 2.095 ± 0.005 mm, długość 8.000 ± 0.025 mm)',
-        '3. **Ustawienie temperatury**: Ustaw temperaturę zgodnie z normą dla badanego materiału',
-        '4. **Stabilizacja**: Poczekaj na stabilizację temperatury (±0.5°C)',
-        '5. **Kalibracja**: Sprawdź kalibrację wagi i timera',
-        '6. **Obciążenie**: Przygotuj odpowiednie obciążenie dla materiału'
-      ],
-      safety: [
-        'Nie dotykaj gorących powierzchni plastometru',
-        'Upewnij się że aparat jest prawidłowo uziemiony',
-        'Sprawdź czy wszystkie połączenia są bezpieczne'
-      ],
-      tips: [
-        'Temperatura powinna być stabilna przez co najmniej 15 minut przed testem',
-        'Sprawdź czy dysza nie jest zablokowana',
-        'Upewnij się że tłok porusza się swobodnie'
-      ]
-    },
-    {
-      id: 'sample-loading',
-      title: 'Wprowadzenie próbki',
-      duration: '5-10 minut',
-      instructions: [
-        '1. **Czyszczenie**: Wyczyść cylinder z pozostałości poprzedniego materiału',
-        '2. **Ładowanie**: Wprowadź próbkę (3-8 g) do cylindra plastometru',
-        '3. **Zagęszczenie**: Lekko zagęść materiał za pomocą tłoka',
-        '4. **Obciążenie**: Nałóż odpowiednie obciążenie na tłok',
-        '5. **Wstępne podgrzanie**: Poczekaj 300 ± 30 sekund na wygrzanie materiału'
-      ],
-      safety: [
-        'Używaj narzędzi do wprowadzania próbki - nie używaj palców',
-        'Uważaj na gorące pary wydobywające się z cylindra',
-        'Nie nadmiernie zagęszczaj materiału'
-      ],
-      tips: [
-        'Materiał powinien wypełnić cylinder równomiernie',
-        'Unikaj wprowadzania powietrza do cylindra',
-        'Obserwuj czy materiał zaczyna wypływać z dyszy'
-      ]
-    },
-    {
-      id: 'preheating',
-      title: 'Wygrzewanie wstępne',
-      duration: '5 minut',
-      instructions: [
-        '1. **Timer**: Uruchom timer na 300 ± 30 sekund',
-        '2. **Obserwacja**: Obserwuj czy materiał zaczyna wypływać z dyszy',
-        '3. **Czyszczenie**: Usuń materiał wypływający podczas wygrzewania',
-        '4. **Przygotowanie**: Przygotuj narzędzia do cięcia próbek',
-        '5. **Kontrola**: Sprawdź czy temperatura jest stabilna'
-      ],
-      safety: [
-        'Nie blokuj wypływu materiału z dyszy',
-        'Uważaj na gorący materiał wypływający z aparatu',
-        'Zachowaj bezpieczną odległość od gorących części'
-      ],
-      tips: [
-        'Pierwsza porcja materiału może zawierać pęcherzyki powietrza',
-        'Materiał powinien wypływać równomiernie',
-        'Jeśli materiał nie wypływa, sprawdź temperaturę i obciążenie'
-      ]
-    },
-    {
-      id: 'measurement',
-      title: 'Pomiar MFR/MVR',
+      id: 'prep-1',
+      title: 'Przygotowanie Sprzętu',
+      description: 'Przygotuj plastometr i sprawdź kalibrację',
       duration: '10-15 minut',
       instructions: [
-        '1. **Rozpoczęcie pomiaru**: Po zakończeniu wygrzewania rozpocznij pomiar',
-        '2. **Cięcie próbek**: Tnij próbki co 10 ± 0.1 s lub 30 ± 0.1 s',
-        '3. **Zbieranie**: Zbierz minimum 6-8 próbek o podobnej masie',
-        '4. **Ważenie**: Zważ każdą próbkę z dokładnością do 0.001 g',
-        '5. **Pomiar objętości**: Dla MVR zmierz również gęstość próbek'
+        'Ustaw temperaturę zgodnie z normą dla testowanego materiału',
+        'Sprawdź czystość cylindra i dyszy',
+        'Zainstaluj odpowiednią dyszę w podstawie cylindra',
+        'Sprawdź kalibrację temperatury',
+        'Upewnij się że tłok porusza się swobodnie w cylindrze',
+        'Przygotuj odpowiednie ciężary do obciążenia'
+      ],
+      tips: [
+        'Cylinder musi być całkowicie czysty aby uniknąć zanieczyszczeń',
+        'Sprawdź czy dysza nie jest zablokowana',
+        'Kalibrację temperatury sprawdzaj regularnie'
       ],
       safety: [
-        'Używaj odpowiednich narzędzi do cięcia gorącego materiału',
-        'Uważaj na ostre krawędzie narzędzi tnących',
-        'Nie dotykaj gorących próbek gołymi rękami'
-      ],
-      tips: [
-        'Próbki powinny mieć podobną masę (odchylenie <10%)',
-        'Tnij próbki jednym zdecydowanym ruchem',
-        'Zapisuj czas cięcia każdej próbki'
+        'Noś rękawice termoodporne',
+        'Uważaj na gorące powierzchnie',
+        'Sprawdź funkcję awaryjnego wyłączenia'
       ]
     },
     {
-      id: 'calculation',
-      title: 'Obliczenia wyników',
-      duration: '10 minut',
+      id: 'prep-2',
+      title: 'Przygotowanie Próbki',
+      description: 'Przygotuj odpowiednią ilość materiału do testu',
+      duration: '5 minut',
       instructions: [
-        '1. **MFR**: Oblicz wskaźnik płynięcia masy według wzoru:',
-        '   MFR = (600 × m) / t [g/10min]',
-        '   gdzie: m = średnia masa próbki [g], t = czas cięcia [s]',
-        '',
-        '2. **MVR**: Oblicz wskaźnik płynięcia objętości według wzoru:',
-        '   MVR = MFR / ρ [cm³/10min]',
-        '   gdzie: ρ = gęstość materiału [g/cm³]',
-        '',
-        '3. **Niepewność**: Oblicz odchylenie standardowe z próbek',
-        '4. **Walidacja**: Sprawdź czy wyniki mieszczą się w akceptowalnym zakresie'
+        'Odważ 4-8g próbki materiału',
+        'Sprawdź czy materiał jest suchy i czysty',
+        'Usuń ewentualne zanieczyszczenia lub obce materiały',
+        'Granulki powinny być jednorodne pod względem wielkości',
+        'Przygotuj dodatkowy materiał na przypadek powtórki testu'
       ],
-      safety: [],
       tips: [
-        'Odrzuć próbki o masie różniącej się więcej niż 10% od średniej',
-        'Gęstość można zmierzyć piknometrem lub metodą wyporu',
-        'Zapisz wszystkie parametry testu w protokole'
+        'Materiał musi być reprezentatywny dla całej partii',
+        'Unikaj rozdrobnionych lub uszkodzonych granulek',
+        'Przechowuj próbki w suchym miejscu'
+      ],
+      safety: [
+        'Unikaj wdychania pyłu z materiału',
+        'Noś rękawice podczas manipulacji próbką'
       ]
     },
     {
-      id: 'reporting',
-      title: 'Raportowanie wyników',
-      duration: '15 minut',
+      id: 'setup-1',
+      title: 'Ładowanie Materiału',
+      description: 'Załaduj próbkę do plastometru',
+      duration: '5 minut',
       instructions: [
-        '1. **Protokół**: Wypełnij kompletny protokół badania zawierający:',
-        '   - Identyfikację próbki',
-        '   - Warunki badania (temperatura, obciążenie)',
-        '   - Czas wygrzewania',
-        '   - Wyniki poszczególnych pomiarów',
-        '   - Wartości średnie MFR/MVR',
-        '   - Odchylenie standardowe',
-        '',
-        '2. **Format wyniku**: MFR/MVR (temperatura/obciążenie)',
-        '   Przykład: MFR = 12.5 g/10min (190°C/2.16 kg)',
-        '',
-        '3. **Dokumentacja**: Dołącz zdjęcia próbek i warunków badania'
+        'Poczekaj aż plastometr osiągnie temperaturę testową',
+        'Wsyp próbkę do cylindra przez górny otwór',
+        'Wstaw tłok do cylindra',
+        'Nie dociskaj tłoka - powinien opadać pod własnym ciężarem',
+        'Odstaw na 5-7 minut dla podgrzania materiału'
       ],
-      safety: [],
       tips: [
-        'Zachowaj próbki do ewentualnej weryfikacji',
-        'Zapisz wszystkie obserwacje podczas badania',
-        'Porównaj wyniki z danymi producenta materiału'
+        'Materiał musi się całkowicie stopić przed rozpoczęciem testu',
+        'Tłok nie może być dociskany siłą',
+        'Obserwuj czy materiał równomiernie się topi'
+      ],
+      safety: [
+        'Nie dotykaj gorących części sprzętu',
+        'Uważaj na wycieki stopu z dyszy'
       ]
+    },
+    {
+      id: 'test-1',
+      title: 'Przeprowadzenie Testu',
+      description: 'Wykonaj pomiar wskaźnika płynięcia stopów',
+      duration: '10-15 minut',
+      instructions: [
+        'Nałóż standardowy ciężar na tłok',
+        'Uruchom stoper gdy materiał zacznie wypływać z dyszy',
+        'Zbieraj ekstrudowany materiał w regularnych odstępach',
+        'Odcinaj próbki co określony czas (np. co 30s)',
+        'Kontynuuj przez wymagany czas testowy',
+        'Zważ każdy odcinek ekstrudatu',
+        'Oblicz średnią masę na jednostkę czasu'
+      ],
+      tips: [
+        'Odcinaj ekstrudat ostro i precyzyjnie',
+        'Pierwsze 1-2 minuty mogą być nieregularne - odrzuć te próbki',
+        'Zbieraj przynajmniej 3-5 próbek do obliczenia średniej'
+      ],
+      safety: [
+        'Uważaj na gorący ekstrudowany materiał',
+        'Używaj odpowiednich narzędzi do cięcia',
+        'Nie dotykaj dyszy podczas testu'
+      ]
+    },
+    {
+      id: 'calc-1',
+      title: 'Obliczenia',
+      description: 'Oblicz wskaźnik płynięcia stopów (MFR)',
+      duration: '5 minut',
+      instructions: [
+        'Oblicz średnią masę ekstrudatu: m_śr = Σm_i / n',
+        'Oblicz MFR: MFR = (m_śr × 600) / t [g/10min]',
+        'gdzie: m_śr - średnia masa [g], t - czas cięcia [s]',
+        'Dla MVR: MVR = MFR / ρ [cm³/10min]',
+        'gdzie: ρ - gęstość materiału w temperaturze testu',
+        'Sprawdź czy wynik mieści się w oczekiwanym zakresie'
+      ],
+      tips: [
+        'Sprawdź obliczenia dwukrotnie',
+        'Porównaj z danymi referencyjnymi producenta',
+        'Odrzuć wyniki odbiegające znacznie od średniej'
+      ],
+      safety: []
     }
   ],
 
   calculations: {
-    mfr: {
-      formula: 'MFR = (600 × m) / t',
-      units: 'g/10min',
-      description: 'Wskaźnik płynięcia masy'
-    },
-    mvr: {
-      formula: 'MVR = MFR / ρ',
-      units: 'cm³/10min', 
-      description: 'Wskaźnik płynięcia objętości'
+    mfr: 'MFR = (m_śr × 600) / t [g/10min]',
+    mvr: 'MVR = MFR / ρ [cm³/10min]',
+    where: {
+      'm_śr': 'średnia masa ekstrudatu [g]',
+      't': 'czas cięcia próbki [s]',
+      'ρ': 'gęstość materiału w temp. testu [g/cm³]'
     }
   },
 
-  acceptance_criteria: {
-    repeatability: 'Współczynnik zmienności ≤ 10%',
-    sample_count: 'Minimum 6 próbek',
-    temperature_tolerance: '± 0.5°C',
-    time_tolerance: '± 0.1 s'
+  acceptanceCriteria: {
+    repeatability: 'Różnica między pomiarami < 10% dla MFR < 10 g/10min',
+    reproducibility: 'Różnica między laboratoriami < 20%',
+    minimumSamples: 'Minimum 3 pomiary na próbkę',
+    outliers: 'Odrzuć pomiary różniące się > 15% od średniej'
   },
 
-  common_issues: [
+  commonIssues: [
     {
-      problem: 'Materiał nie wypływa z dyszy',
-      causes: ['Za niska temperatura', 'Zablokowana dysza', 'Za małe obciążenie'],
-      solutions: ['Sprawdź ustawienia temperatury', 'Wyczyść dyszę', 'Zwiększ obciążenie']
+      problem: 'Nieregularny przepływ materiału',
+      causes: [
+        'Nierównomierna temperatura',
+        'Zanieczyszczony cylinder',
+        'Niewłaściwa lepkość materiału'
+      ],
+      solutions: [
+        'Sprawdź kalibrację temperatury',
+        'Wyczyść dokładnie cylinder',
+        'Sprawdź właściwości materiału'
+      ]
     },
     {
-      problem: 'Nieregularny wypływ materiału',
-      causes: ['Pęcherzyki powietrza', 'Niejednorodna próbka', 'Zanieczyszczenia'],
-      solutions: ['Przedłuż czas wygrzewania', 'Przygotuj nową próbkę', 'Wyczyść aparat']
+      problem: 'Brak wypływu materiału',
+      causes: [
+        'Za niska temperatura',
+        'Zablokowana dysza',
+        'Za wysoką lepkość materiału'
+      ],
+      solutions: [
+        'Zwiększ temperaturę zgodnie z normą',
+        'Wyczyść lub wymień dyszę',
+        'Zastosuj większe obciążenie'
+      ]
     },
     {
-      problem: 'Duże rozrzuty wyników',
-      causes: ['Niestabilna temperatura', 'Błędy w cięciu', 'Niejednorodny materiał'],
-      solutions: ['Sprawdź kalibrację aparatu', 'Popraw technikę cięcia', 'Lepiej wymieszaj materiał']
+      problem: 'Niereprodukowalne wyniki',
+      causes: [
+        'Niejednorodność próbki',
+        'Niestabilna temperatura',
+        'Nieprawidłowa procedura'
+      ],
+      solutions: [
+        'Sprawdź jednorodność materiału',
+        'Sprawdź stabilność temperatury',
+        'Powtórz kalibrację sprzętu'
+      ]
     }
+  ],
+
+  typicalValues: [
+    {
+      id: 'tv1',
+      parameter: 'MFR',
+      material: 'PE-LD',
+      value: '0.1-20',
+      unit: 'g/10min',
+      range: { min: '0.1', max: '20' },
+      conditions: '190°C/2.16kg',
+      category: 'thermal',
+      source: 'ISO 1133',
+      isReference: true
+    },
+    {
+      id: 'tv2',
+      parameter: 'MFR',
+      material: 'PE-HD',
+      value: '0.1-50',
+      unit: 'g/10min',
+      range: { min: '0.1', max: '50' },
+      conditions: '190°C/2.16kg',
+      category: 'thermal',
+      source: 'ISO 1133',
+      isReference: true
+    },
+    {
+      id: 'tv3',
+      parameter: 'MFR',
+      material: 'PP',
+      value: '0.1-100',
+      unit: 'g/10min',
+      range: { min: '0.1', max: '100' },
+      conditions: '230°C/2.16kg',
+      category: 'thermal',
+      source: 'ISO 1133',
+      isReference: true
+    },
+    {
+      id: 'tv4',
+      parameter: 'MFR',
+      material: 'PS',
+      value: '1-30',
+      unit: 'g/10min',
+      range: { min: '1', max: '30' },
+      conditions: '200°C/5kg',
+      category: 'thermal',
+      source: 'ISO 1133',
+      isReference: true
+    },
+    {
+      id: 'tv5',
+      parameter: 'MFR',
+      material: 'ABS',
+      value: '1-50',
+      unit: 'g/10min',
+      range: { min: '1', max: '50' },
+      conditions: '220°C/10kg',
+      category: 'thermal',
+      source: 'ISO 1133',
+      isReference: true
+    },
+    {
+      id: 'tv6',
+      parameter: 'MFR',
+      material: 'PC',
+      value: '5-30',
+      unit: 'g/10min',
+      range: { min: '5', max: '30' },
+      conditions: '300°C/1.2kg',
+      category: 'thermal',
+      source: 'ISO 1133',
+      isReference: true
+    }
+  ],
+
+  references: [
+    'ISO 1133-1:2011 - Plastics - Determination of the melt mass-flow rate (MFR) and melt volume-flow rate (MVR) of thermoplastics - Part 1: Standard method',
+    'ISO 1133-2:2011 - Part 2: Method for materials sensitive to time-temperature history',
+    'ASTM D1238-13 - Standard Test Method for Melt Flow Rates of Thermoplastics by Extrusion Plastometer'
   ]
 };
 
-export default ISO1133Protocol;
